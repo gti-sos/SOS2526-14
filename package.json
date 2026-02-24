@@ -1,23 +1,15 @@
 {
   "name": "sos2526-14",
-  "version": "0.0.0",
-  "description": "- **Team**\r   - Jeremías Josué Pluas Charcopa (https://github.com/Jeremiaspch)\r   - Jaime García Algarra (https://github.com/JaimeGarcia1907)\r   - Fernando Reguera Bueno (https://github.com/fernandorebu)\r   - --\r - **Project description**: This project examines the relationship between natural objects entering Earth’s atmosphere   and the technological footprint humans send into space. The objective is to compare the historical mass of recovered meteorites against the mass of active satellites and current launch costs. We aim to determine if the human \"footprint\" in outer space is now outpacing natural phenomena in magnitude, while analyzing the global geographic distribution of these events.\r - **Repository**: [gti-sos/SOS2526-14](https://github.com/gti-sos/SOS2526-14)",
-  "homepage": "https://github.com/gti-sos/SOS2526-14#readme",
-  "bugs": {
-    "url": "https://github.com/gti-sos/SOS2526-14/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/gti-sos/SOS2526-14.git"
-  },
-  "license": "ISC",
-  "author": "",
-  "type": "commonjs",
+  "version": "1.0.0",
+  "description": "SOS2526-14 Project",
   "main": "index.js",
+  "type": "commonjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "dependencies": {
-    "csv-parser": "^3.2.0"
+    "body-parser": "^2.2.2",
+    "csv-parser": "^3.2.0",
+    "express": "^4.22.1"
   }
 }
