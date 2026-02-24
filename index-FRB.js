@@ -1,3 +1,5 @@
+// index-FRB.js
+
 // 1. Inicializamos el array con tus 10 datos de ejemplo exactos
 const misiones = [
     { mission_id: 1, company_name: "SpaceX", location: "LC-39A, Kennedy Space Center, Florida, USA", launch_date: "2020-08-06 5:12:00", year: 2020, latitude: 28.5728, longitude: -80.649, cost: 50, rocket_name: "Falcon 9 Block 5 | Starlink V1 L9 & BlackSky", rocket_status: "StatusActive", mission_status: "Success", country: "usa" },
@@ -12,31 +14,22 @@ const misiones = [
     { mission_id: 10, company_name: "NASA", location: "LC-19, Cape Canaveral AFS, Florida, USA", launch_date: "12/09/1966 14:42", year: 1966, latitude: 28.474, longitude: -805.772, cost: null, rocket_name: "Titan II GLV | Gemini XI", rocket_status: "StatusRetired", mission_status: "Success", country: "usa" }
 ];
 
-// Queremos calcular la media del campo "cost" para el país "usa"
-const paisBuscado = "usa";
-
-// 2. Usamos .filter() para quedarnos con las misiones de "usa" QUE TENGAN coste (cost !== null)
-const misionesValidas = misiones.filter(mision => {
-    return mision.country === paisBuscado && mision.cost !== null;
-});
-
-// 3. Usamos .map() para extraer un nuevo array solo con los números del coste
-const costesExtraidos = misionesValidas.map(mision => mision.cost);
-
-// 4. Calculamos la suma total usando .forEach()
-let sumaCostes = 0;
-costesExtraidos.forEach(coste => {
-    sumaCostes += coste;
-});
-
-// 5. Calculamos la media
-let mediaCoste = 0;
-if (costesExtraidos.length > 0) {
-    mediaCoste = sumaCostes / costesExtraidos.length;
+// Función que calcula la media del coste para USA
+function calcularMediaUSA() {
+    const paisBuscado = "usa";
+    const misionesValidas = misiones.filter(m => m.country === paisBuscado && m.cost !== null);
+    const costes = misionesValidas.map(m => m.cost);
+    let suma = 0;
+    costes.forEach(c => suma += c);
+    const media = costes.length > 0 ? suma / costes.length : 0;
+    return media;
 }
 
-// 6. Mostramos el resultado
+// Dejamos tus console.log originales (opcional, para debug)
 console.log(`Buscando en los datos provistos...`);
-console.log(`País analizado: ${paisBuscado.toUpperCase()}`);
-console.log(`Misiones con datos de coste válidos en ese país: ${costesExtraidos.length}`);
-console.log(`El coste medio es de: ${mediaCoste} millones.`);
+console.log(`País analizado: usa`);
+console.log(`Misiones con datos de coste válidos en ese país: ${misiones.filter(m => m.country === "usa" && m.cost !== null).length}`);
+console.log(`El coste medio es de: ${calcularMediaUSA()} millones.`);
+
+// Exportamos la función para que index.js la use en la ruta
+module.exports = calcularMediaUSA;
