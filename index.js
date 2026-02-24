@@ -1,11 +1,18 @@
 const express = require("express");
 const path = require("path");
 const calcularFRB = require("./index-FRB.js"); // tu algoritmo
+const spaceLaunchesAPI = require("./api/spaceLaunches");
 
 const app = express();
 
+// Middleware para JSON
+app.use(express.json());
+
 // Servir archivos estáticos
 app.use(express.static("public"));
+
+// Registrar la API **antes** de app.listen
+app.use("/api/v1/space-launches", spaceLaunchesAPI);
 
 // Ruta principal
 app.get("/", (req, res) => {
