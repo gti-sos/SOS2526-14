@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const calcularFRB = require("./index-FRB.js"); // tu algoritmo
 
 const app = express();
 
@@ -23,6 +24,13 @@ app.get("/cool", (req, res) => {
 // Ruta /about
 app.get("/about", (req, res) => {
     res.sendFile(path.join(__dirname, "public/about.html"));
+});
+
+// /samples/FRB
+app.get("/samples/FRB", (req, res) => {
+    const resultado = calcularFRB();
+    res.send(`<h1>Resultado del cálculo para USA</h1>
+              <p>Coste medio: ${resultado} millones</p>`);
 });
 
 // Puerto obligatorio para Render
