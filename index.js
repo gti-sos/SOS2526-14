@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
-const calcularFRB = require("./index-FRB.js"); // tu algoritmo
+const calcularFRB = require("./index-FRB.js"); // algoritmo Fernando
+const calcularJPC = require("./index-jpc.js"); // algoritmo Jeremias
 const spaceLaunchesAPI = require("./api/spaceLaunches");
 
 const app = express();
@@ -38,6 +39,13 @@ app.get("/samples/FRB", (req, res) => {
     const resultado = calcularFRB();
     res.send(`<h1>Resultado del cálculo para USA</h1>
               <p>Coste medio: ${resultado} millones</p>`);
+});
+
+// /samples/JPC
+app.get("/samples/JPC", (req, res) => {
+    const resultado = calcularJPC();
+    res.send(`<h1>Resultado del cálculo para Argentina</h1>
+              <p>La masa media de Meteorito caido es: ${resultado} gramos</p>`);
 });
 
 // Puerto obligatorio para Render
