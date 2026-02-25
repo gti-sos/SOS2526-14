@@ -65,6 +65,7 @@ app.get(BASE_URL_API + "/meteorite-landings", async (req, res) => {
     const enjson = await csv().fromFile(meteorite_csv);
     
     // 3. Ahora "enjson" ya contiene los datos reales, no una promesa
+    //res.send("hola")
     res.json(enjson);
 });
 
