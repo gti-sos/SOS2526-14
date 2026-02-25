@@ -2,6 +2,8 @@ const express = require("express");
 const path = require("path");
 const calcularFRB = require("./index-FRB.js"); // algoritmo Fernando
 const calcularJPC = require("./index-JPC.js"); // algoritmo Jeremias
+const csv = require('csvtojson');
+
 const spaceLaunchesAPI = require("./api/spaceLaunches");
 const { METHODS } = require("http");
 
@@ -52,10 +54,16 @@ app.get("/samples/JPC", (req, res) => {
               <p>La masa media de Meteorito caído es: ${resultado} gramos.</p>`);
 });
 
-let meteorite_csv = "data/meteorite-landings-with-country.csv"
+let meteorite_csv = "data/meteorite-landings-with-country.csv";
 
-app.get(BASE_URL_API+"/meteorite-landings", (req, res)=> {
-    res.send(JSON.stringify(meteorite_csv))
+// 1. Añadimos "async" antes de los parámetros (req, res)
+app.get(BASE_URL_API + "/meteorite-landings", async (req, res) => {
+    
+    // 2. Añadimos "await" antes de la función que lee el archivo
+    const enjson = await csv().fromFile(meteorite_csv);
+    
+    // 3. Ahora "enjson" ya contiene los datos reales, no una promesa
+    res.json(enjson);
 });
 
 // Puerto obligatorio para Render
