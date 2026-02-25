@@ -3,8 +3,11 @@ const path = require("path");
 const calcularFRB = require("./index-FRB.js"); // algoritmo Fernando
 const calcularJPC = require("./index-JPC.js"); // algoritmo Jeremias
 const spaceLaunchesAPI = require("./api/spaceLaunches");
+const { METHODS } = require("http");
 
 const app = express();
+
+const BASE_URL_API = "/api/v1"
 
 // Middleware para JSON
 app.use(express.json());
@@ -40,12 +43,19 @@ app.get("/samples/FRB", (req, res) => {
     res.send(`<h1>Resultado del cálculo para USA</h1>
               <p>Coste medio: ${resultado} millones</p>`);
 });
+//##############################################################JEREMIAS
 
 // /samples/JPC
 app.get("/samples/JPC", (req, res) => {
     const resultado = calcularJPC();
     res.send(`<h1>Resultado del cálculo para Argentina</h1>
               <p>La masa media de Meteorito caído es: ${resultado} gramos.</p>`);
+});
+
+let meteorite_csv = "data/meteorite-landings-with-country.csv"
+
+app.get(BASE_URL_API+"/meteorite-landings", (req, res)=> {
+    res.send(JSON.stringify(meteorite_csv))
 });
 
 // Puerto obligatorio para Render
