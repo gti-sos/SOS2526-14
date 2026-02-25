@@ -45,7 +45,7 @@ app.get("/samples/FRB", (req, res) => {
 app.get("/samples/JPC", (req, res) => {
     const resultado = calcularJPC();
     res.send(`<h1>Resultado del cálculo para Argentina</h1>
-              <p>La masa media de Meteorito caido es: ${resultado} gramos</p>`);
+              <p>La masa media de Meteorito caído es: ${resultado} gramos.</p>`);
 });
 
 // Puerto obligatorio para Render
