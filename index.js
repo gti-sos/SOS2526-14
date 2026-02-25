@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
 const calcularFRB = require("./index-FRB.js"); // algoritmo Fernando
-const calcularJPC = require("./index-jpc.js"); // algoritmo Jeremias
+const calcularJPC = require("./index-JPC.js"); // algoritmo Jeremias
 const spaceLaunchesAPI = require("./api/spaceLaunches");
 
 const app = express();
