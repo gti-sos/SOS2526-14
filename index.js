@@ -60,6 +60,20 @@ const meteorite_csv = path.join(__dirname, "data", "meteorite-landings-with-coun
 
 // 1. Añadimos "async" antes de los parámetros (req, res)
 app.get(BASE_URL_API + "/meteorite-landings", async (req, res) => {
+    res.send("hellooo santi")
+    
+    /*
+    // 2. Añadimos "await" antes de la función que lee el archivo
+    const enjson = await csv().fromFile(meteorite_csv);
+    
+    // 3. Ahora "enjson" ya contiene los datos reales, no una promesa
+    //res.send("hola")
+    res.json(enjson);
+    */
+});
+
+
+app.get(BASE_URL_API + "/meteorite-landings", async (req, res) => {
     
     // 2. Añadimos "await" antes de la función que lee el archivo
     const enjson = await csv().fromFile(meteorite_csv);
@@ -68,6 +82,7 @@ app.get(BASE_URL_API + "/meteorite-landings", async (req, res) => {
     //res.send("hola")
     res.json(enjson);
 });
+
 
 // Puerto obligatorio para Render
 const PORT = process.env.PORT || 10000;
