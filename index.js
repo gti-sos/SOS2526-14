@@ -1,79 +1,56 @@
 const express = require("express");
 const path = require("path");
-const calcularFRB = require("./index-FRB.js"); // algoritmo Fernando
-const calcularJPC = require("./index-JPC.js"); // algoritmo Jeremias
-const csv = require("csvtojson");
-const cool = require("cool-ascii-faces"); // caras aleatorias
 
-const spaceLaunchesAPI = require("./api/spaceLaunches");
+// --- 1. ALGORITMOS Y LIBRERÍAS EXTERNAS ---
+const calcularFRB = require("./index-FRB.js");
+const calcularJPC = require("./index-JPC.js");
+const cool = require("cool-ascii-faces"); 
+
+// --- 2. IMPORTACIÓN DE APIS MODULARES ---
+const spaceLaunchesAPI = require("./api/spaceLaunches.js");
+const meteoriteLandingsAPI = require("./api/meteorite-landings.js");
 
 const app = express();
 const BASE_URL_API = "/api/v1";
 
-// Middleware para JSON
+// --- 3. MIDDLEWARES ---
 app.use(express.json());
-
-// Servir archivos estáticos
 app.use(express.static("public"));
 
-// Registrar la API **antes** de app.listen
-app.use("/api/v1/space-launches", spaceLaunchesAPI);
+// --- 4. REGISTRO DE RUTAS DE API ---
+// Usamos la variable BASE_URL_API para que todo sea consistente
+app.use(BASE_URL_API + "/space-launches", spaceLaunchesAPI);
+app.use(BASE_URL_API + "/meteorite-landings", meteoriteLandingsAPI);
 
-// Ruta principal
+// --- 5. RUTAS ESTÁTICAS Y DE CONTENIDO ---
 app.get("/", (req, res) => {
     res.send("SOS2526-14 running correctly 🚀");
 });
 
-// Ruta /cool con cara aleatoria
 app.get("/cool", (req, res) => {
-    res.send(`
-        <pre>
-        ${cool()}
-        </pre>
-    `);
+    res.send(`<pre>${cool()}</pre>`);
 });
 
-// Ruta /about
 app.get("/about", (req, res) => {
     res.sendFile(path.join(__dirname, "public/about.html"));
 });
 
-// /samples/FRB
+// --- 6. RUTAS DE PRUEBA (SAMPLES) ---
 app.get("/samples/FRB", async (req, res) => {
     try {
         const resultado = await calcularFRB();
-        res.send(`<h1>Resultado del cálculo para USA</h1>
-                  <p>Coste medio: ${resultado} millones</p>`);
+        res.send(`<h1>Resultado para USA</h1><p>Coste medio: ${resultado} millones</p>`);
     } catch (error) {
         res.status(500).send("Error calculando la media");
     }
 });
 
-// /samples/JPC
 app.get("/samples/JPC", (req, res) => {
     const resultado = calcularJPC();
-    res.send(`<h1>Resultado del cálculo para Argentina</h1>
-              <p>La masa media de Meteorito caído es: ${resultado} gramos.</p>`);
+    res.send(`<h1>Resultado para Argentina</h1><p>Masa media: ${resultado} gramos.</p>`);
 });
 
-// Asegúrate de usar la ruta absoluta con path.join
-const meteorite_csv = path.join(__dirname, "data", "meteorite-landings-with-country.csv");
-
-app.get(BASE_URL_API + "/meteorite-landings", async (req, res) => {
-    try {
-        // Esperamos a que la librería termine de convertir el CSV
-        const enjson = await csv().fromFile(meteorite_csv);
-        
-        // Enviamos el JSON resultante
-        res.json(enjson);
-    } catch (error) {
-        // Si hay un error (ej: no encuentra el archivo), Render nos avisará aquí
-        console.error("Error en la ruta de meteoritos:", error);
-        res.status(500).send("Error al procesar el archivo CSV");
-    }
-});
-
-// Puerto obligatorio para Render
+// --- 7. INICIO DEL SERVIDOR ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
     console.log("Server running on port " + PORT);
