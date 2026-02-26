@@ -2,14 +2,13 @@ const express = require("express");
 const path = require("path");
 const calcularFRB = require("./index-FRB.js"); // algoritmo Fernando
 const calcularJPC = require("./index-JPC.js"); // algoritmo Jeremias
-const csv = require('csvtojson');
+const csv = require("csvtojson");
+const cool = require("cool-ascii-faces"); // caras aleatorias
 
 const spaceLaunchesAPI = require("./api/spaceLaunches");
-const { METHODS } = require("http");
 
 const app = express();
-
-const BASE_URL_API = "/api/v1"
+const BASE_URL_API = "/api/v1";
 
 // Middleware para JSON
 app.use(express.json());
@@ -25,11 +24,11 @@ app.get("/", (req, res) => {
     res.send("SOS2526-14 running correctly 🚀");
 });
 
-// Ruta /cool
+// Ruta /cool con cara aleatoria
 app.get("/cool", (req, res) => {
     res.send(`
         <pre>
-        (•‿•)
+        ${cool()}
         </pre>
     `);
 });
@@ -41,18 +40,14 @@ app.get("/about", (req, res) => {
 
 // /samples/FRB
 app.get("/samples/FRB", async (req, res) => {
-
     try {
         const resultado = await calcularFRB();
-
         res.send(`<h1>Resultado del cálculo para USA</h1>
                   <p>Coste medio: ${resultado} millones</p>`);
-
     } catch (error) {
         res.status(500).send("Error calculando la media");
     }
 });
-//##############################################################JEREMIAS
 
 // /samples/JPC
 app.get("/samples/JPC", (req, res) => {
@@ -61,18 +56,22 @@ app.get("/samples/JPC", (req, res) => {
               <p>La masa media de Meteorito caído es: ${resultado} gramos.</p>`);
 });
 
-let meteorite_csv = "./data/meteorite-landings-with-country.csv";
-//const meteorite_csv = path.join(__dirname, "data", "meteorite-landings-with-country.csv");
+// Asegúrate de usar la ruta absoluta con path.join
+const meteorite_csv = path.join(__dirname, "data", "meteorite-landings-with-country.csv");
 
-app.get(BASE_URL_API + "/meteorite-landings", (req, res) => {
-    // 2. Añadimos "await" antes de la función que lee el archivo
-    const enjson = csv().fromFile(meteorite_csv);
-    
-    // 3. Ahora "enjson" ya contiene los datos reales, no una promesa
-    //res.send("hola")
-    res.json(enjson);
+app.get(BASE_URL_API + "/meteorite-landings", async (req, res) => {
+    try {
+        // Esperamos a que la librería termine de convertir el CSV
+        const enjson = await csv().fromFile(meteorite_csv);
+        
+        // Enviamos el JSON resultante
+        res.json(enjson);
+    } catch (error) {
+        // Si hay un error (ej: no encuentra el archivo), Render nos avisará aquí
+        console.error("Error en la ruta de meteoritos:", error);
+        res.status(500).send("Error al procesar el archivo CSV");
+    }
 });
-
 
 // Puerto obligatorio para Render
 const PORT = process.env.PORT || 10000;
