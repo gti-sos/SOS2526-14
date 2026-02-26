@@ -61,16 +61,21 @@ app.get("/samples/JPC", (req, res) => {
               <p>La masa media de Meteorito caído es: ${resultado} gramos.</p>`);
 });
 
-let meteorite_csv = "./data/meteorite-landings-with-country.csv";
-//const meteorite_csv = path.join(__dirname, "data", "meteorite-landings-with-country.csv");
+// Asegúrate de usar la ruta absoluta con path.join
+const meteorite_csv = path.join(__dirname, "data", "meteorite-landings-with-country.csv");
 
-app.get(BASE_URL_API + "/meteorite-landings", (req, res) => {
-    // 2. Añadimos "await" antes de la función que lee el archivo
-    const enjson = csv().fromFile(meteorite_csv);
-    
-    // 3. Ahora "enjson" ya contiene los datos reales, no una promesa
-    //res.send("hola")
-    res.json(enjson);
+app.get(BASE_URL_API + "/meteorite-landings", async (req, res) => {
+    try {
+        // Esperamos a que la librería termine de convertir el CSV
+        const enjson = await csv().fromFile(meteorite_csv);
+        
+        // Enviamos el JSON resultante
+        res.json(enjson);
+    } catch (error) {
+        // Si hay un error (ej: no encuentra el archivo), Render nos avisará aquí
+        console.error("Error en la ruta de meteoritos:", error);
+        res.status(500).send("Error al procesar el archivo CSV");
+    }
 });
 
 
