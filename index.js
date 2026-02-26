@@ -40,10 +40,17 @@ app.get("/about", (req, res) => {
 });
 
 // /samples/FRB
-app.get("/samples/FRB", (req, res) => {
-    const resultado = calcularFRB();
-    res.send(`<h1>Resultado del cálculo para USA</h1>
-              <p>Coste medio: ${resultado} millones</p>`);
+app.get("/samples/FRB", async (req, res) => {
+
+    try {
+        const resultado = await calcularFRB();
+
+        res.send(`<h1>Resultado del cálculo para USA</h1>
+                  <p>Coste medio: ${resultado} millones</p>`);
+
+    } catch (error) {
+        res.status(500).send("Error calculando la media");
+    }
 });
 //##############################################################JEREMIAS
 

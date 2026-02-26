@@ -1,40 +1,89 @@
 const express = require("express");
 const router = express.Router();
+const fs = require("fs");
+const path = require("path");
+const csv = require("csv-parser");
 
-// Array en memoria
+const filePath = path.join(__dirname, "../data/space-missions-with-country.csv");
+
 let spaceLaunches = [];
 
-// loadInitialData
-router.get("/loadInitialData", (req, res) => {
-    if (spaceLaunches.length === 0) {
-        spaceLaunches = [
-            { mission_id: 1, company_name: "SpaceX", location: "LC-39A, Kennedy Space Center, Florida, USA", launch_date: "2020-08-06 5:12:00", year: 2020, latitude: 28.5728, longitude: -80.649, cost: 50, rocket_name: "Falcon 9 Block 5 | Starlink V1 L9 & BlackSky", rocket_status: "StatusActive", mission_status: "Success", country: "usa" },
-            { mission_id: 2, company_name: "RVSN USSR", location: "Site 43/4, Plesetsk Cosmodrome, Russia", launch_date: "1976-12-28 6:38:00", year: 1976, latitude: 62.9256, longitude: 40.5777, cost: null, rocket_name: "Molniya-M /Block ML | Molniya-3 n†­65", rocket_status: "StatusRetired", mission_status: "Success", country: "russia" },
-            { mission_id: 3, company_name: "ULA", location: "SLC-41, Cape Canaveral AFS, Florida, USA", launch_date: "2019-12-20 11:36:00", year: 2019, latitude: 28.474, longitude: -80.5772, cost: null, rocket_name: "Atlas V N22 | Starliner OFT", rocket_status: "StatusActive", mission_status: "Success", country: "usa" },
-            { mission_id: 4, company_name: "SpaceX", location: "LC-39A, Kennedy Space Center, Florida, USA", launch_date: "19/01/2020 15:30", year: 2020, latitude: 285.728, longitude: -80.649, cost: 50, rocket_name: "Falcon 9 Block 5 | Crew Dragon Inflight Abort Test", rocket_status: "StatusActive", mission_status: "Success", country: "usa" },
-            { mission_id: 5, company_name: "Arianespace", location: "ELA-3, Guiana Space Centre, French Guiana, France", launch_date: "26/06/2010 21:41", year: 2010, latitude: 5.236, longitude: -52.775, cost: 200, rocket_name: "Ariane 5 ECA | Arabsat-5A, COMS-1", rocket_status: "StatusActive", mission_status: "Success", country: "france" },
-            { mission_id: 6, company_name: "RVSN USSR", location: "Site 43/4, Plesetsk Cosmodrome, Russia", launch_date: "03/12/1971 13:00", year: 1971, latitude: 629.256, longitude: 405.777, cost: null, rocket_name: "Voskhod | Zenit-2M nâ€ Â­25", rocket_status: "StatusRetired", mission_status: "Failure", country: "russia" },
-            { mission_id: 7, company_name: "NASA", location: "LC-39A, Kennedy Space Center, Florida, USA", launch_date: "08/06/2007 23:38", year: 2007, latitude: 285.728, longitude: -80.649, cost: 450, rocket_name: "Space Shuttle Atlantis | STS-117", rocket_status: "StatusRetired", mission_status: "Success", country: "usa" },
-            { mission_id: 8, company_name: "Boeing", location: "SLC-17B, Cape Canaveral AFS, Florida, USA", launch_date: "19/03/1994 23:45", year: 1994, latitude: 28.474, longitude: -805.772, cost: null, rocket_name: "Delta II 7925-8 | Galaxy 1R", rocket_status: "StatusRetired", mission_status: "Success", country: "usa" },
-            { mission_id: 9, company_name: "CASC", location: "Site 138 (LA-2B), Jiuquan Satellite Launch Center, China", launch_date: "10/11/1976 9:05", year: 1976, latitude: 409.605, longitude: 100.2983, cost: null, rocket_name: "Feng Bao 1 | JSSW-6", rocket_status: "StatusRetired", mission_status: "Failure", country: "china" },
-            { mission_id: 10, company_name: "NASA", location: "LC-19, Cape Canaveral AFS, Florida, USA", launch_date: "12/09/1966 14:42", year: 1966, latitude: 28.474, longitude: -805.772, cost: null, rocket_name: "Titan II GLV | Gemini XI", rocket_status: "StatusRetired", mission_status: "Success", country: "usa" }
-        ];
-        res.status(201).json({ message: "Datos iniciales cargados", data: spaceLaunches });
-    } else {
-        res.status(200).json({ message: "Datos ya existían", data: spaceLaunches });
-    }
-});
+/* ================================
+   CARGAR CSV AL INICIAR SERVIDOR
+================================ */
 
-// GET todos los datos
+function loadCSV() {
+    spaceLaunches = [];
+
+    return new Promise((resolve, reject) => {
+        fs.createReadStream(filePath)
+            .pipe(csv())
+            .on("data", (row) => {
+
+                // Convertimos tipos correctamente
+                row.mission_id = Number(row.mission_id);
+                row.year = Number(row.year);
+                row.latitude = Number(row.latitude);
+                row.longitude = Number(row.longitude);
+                row.cost = row.cost ? Number(row.cost) : null;
+
+                spaceLaunches.push(row);
+            })
+            .on("end", () => {
+                console.log("✅ CSV cargado correctamente");
+                resolve();
+            })
+            .on("error", reject);
+    });
+}
+
+loadCSV();
+
+/* ================================
+   GET TODOS LOS DATOS
+================================ */
+
 router.get("/", (req, res) => {
     res.status(200).json(spaceLaunches);
 });
 
-// POST: añadir un nuevo dato
+/* ================================
+   POST - AÑADIR NUEVO LANZAMIENTO
+================================ */
+
 router.post("/", (req, res) => {
+
     const nuevo = req.body;
+
+    // Validación básica
+    if (!nuevo.mission_id || !nuevo.company_name) {
+        return res.status(400).json({
+            error: "Faltan campos obligatorios"
+        });
+    }
+
+    // Convertimos tipos
+    nuevo.mission_id = Number(nuevo.mission_id);
+    nuevo.year = Number(nuevo.year);
+    nuevo.latitude = Number(nuevo.latitude);
+    nuevo.longitude = Number(nuevo.longitude);
+    nuevo.cost = nuevo.cost ? Number(nuevo.cost) : null;
+
     spaceLaunches.push(nuevo);
-    res.status(201).json(nuevo);
+
+    // Creamos línea CSV EXACTAMENTE en el orden correcto
+    const linea =
+`${nuevo.mission_id},"${nuevo.company_name}","${nuevo.location}",${nuevo.launch_date},${nuevo.year},${nuevo.latitude},${nuevo.longitude},${nuevo.cost ?? ""},"${nuevo.rocket_name}",${nuevo.rocket_status},${nuevo.mission_status},${nuevo.country}\n`;
+
+    fs.appendFile(filePath, linea, (err) => {
+        if (err) {
+            return res.status(500).json({
+                error: "Error escribiendo en CSV"
+            });
+        }
+
+        res.status(201).json(nuevo);
+    });
 });
 
 module.exports = router;
