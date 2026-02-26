@@ -55,7 +55,6 @@ app.get("/samples/JPC", (req, res) => {
 });
 
 let meteorite_csv = "./data/meteorite-landings-with-country.csv";
-// Asegúrate de tener const path = require("path"); arriba
 //const meteorite_csv = path.join(__dirname, "data", "meteorite-landings-with-country.csv");
 
 app.get(BASE_URL_API + "/meteorite-landings", async (req, res) => {
