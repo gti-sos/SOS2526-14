@@ -54,22 +54,9 @@ app.get("/samples/JPC", (req, res) => {
               <p>La masa media de Meteorito caído es: ${resultado} gramos.</p>`);
 });
 
-//let meteorite_csv = "./data/meteorite-landings-with-country.csv";
+let meteorite_csv = "./data/meteorite-landings-with-country.csv";
 // Asegúrate de tener const path = require("path"); arriba
-const meteorite_csv = path.join(__dirname, "data", "meteorite-landings-with-country.csv");
-
-// 1. Añadimos "async" antes de los parámetros (req, res)
-app.get(BASE_URL_API + "/meteorite-landings", async (req, res) => {
-    
-    // 2. Añadimos "await" antes de la función que lee el archivo
-    const enjson = await csv().fromFile(meteorite_csv);
-    
-    // 3. Ahora "enjson" ya contiene los datos reales, no una promesa
-    //res.send("hola")
-    res.json(enjson);
-    
-});
-
+//const meteorite_csv = path.join(__dirname, "data", "meteorite-landings-with-country.csv");
 
 app.get(BASE_URL_API + "/meteorite-landings", async (req, res) => {
     
