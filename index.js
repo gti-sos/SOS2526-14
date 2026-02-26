@@ -24,7 +24,7 @@ app.use(BASE_URL_API + "/meteorite-landings", meteoriteLandingsAPI);
 
 // --- 5. RUTAS ESTÁTICAS Y DE CONTENIDO ---
 app.get("/", (req, res) => {
-    res.send("SOS2526-14 running correctly 🚀");
+    res.send("SOS2526-14 runnnnnnning correctly 🚀");
 });
 
 app.get("/cool", (req, res) => {
