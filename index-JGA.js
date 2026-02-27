@@ -1,3 +1,4 @@
+// 1. Inicializamos el array con datos de ejemplo (Satélites JGA)
 const satellites = [
     { name: "1HOPSAT-TD", country: "USA", launch_date: "2019-12-11", launch_mass: 22.0, expected_lifetime: 0.5, apogee_height: 576.0, perigee_height: 566.0 },
     { name: "AAC AIS-Sat1", country: "United Kingdom", launch_date: "2023-01-03", launch_mass: 4.0, expected_lifetime: null, apogee_height: 654.0, perigee_height: 637.0 },
@@ -11,22 +12,30 @@ const satellites = [
     { name: "Aerocube 6A", country: "USA", launch_date: "2014-06-19", launch_mass: 5.0, expected_lifetime: 3.0, apogee_height: 700.0, perigee_height: 614.0 }
 ];
 
+//Función que calcula la media de masa para un país
+async function calcularJGA() {
+    const targetCountry = "USA";
+    
+    // Filtramos por país y masa válida
+    const filteredSatellites = satellites.filter(s => s.country === targetCountry && s.launch_mass !== null);
+    
+    // Obtenemos solo las masas
+    const masses = filteredSatellites.map(s => s.launch_mass);
+    
+    // Calculamos la suma
+    let totalMass = 0;
+    masses.forEach(m => totalMass += m);
+    
+    // Calculamos la media
+    const averageMass = masses.length > 0 ? totalMass / masses.length : 0;
 
+    //Resultados por consola 
+    console.log(`Análisis para el país: ${targetCountry}`);
+    console.log(`Número de satélites encontrados: ${filteredSatellites.length}`);
+    console.log(`La masa media de lanzamiento es: ${averageMass.toFixed(2)} kg.`);
 
-const targetCountry = "USA";
+    return averageMass.toFixed(2);
+}
 
-// 1. Filtrar el subconjunto por país
-const filteredSatellites = satellites.filter(s => s.country === targetCountry);
-
-// 2. Obtener solo las masas de esos satélites
-const masses = filteredSatellites.map(s => s.launch_mass);
-
-// 3. Calcular la media
-const totalMass = masses.reduce((acc, current) => acc + current, 0);
-const averageMass = totalMass / masses.length;
-
-
-
-console.log(`Análisis para el país: ${targetCountry}`);
-console.log(`Número de satélites encontrados: ${filteredSatellites.length}`);
-console.log(`La masa media de lanzamiento es: ${averageMass.toFixed(2)} kg.`);
+// 4. Exportamos la función para que el servidor la use
+module.exports = calcularJGA;
