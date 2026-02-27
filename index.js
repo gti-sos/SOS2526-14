@@ -4,6 +4,7 @@ const path = require("path");
 // --- 1. ALGORITMOS Y LIBRERÍAS EXTERNAS ---
 const calcularFRB = require("./index-FRB.js");
 const calcularJPC = require("./index-JPC.js");
+const calcularJGA = require("./index-JGA.js");
 const cool = require("cool-ascii-faces"); 
 
 // --- 2. IMPORTACIÓN DE APIS MODULARES ---
@@ -48,6 +49,15 @@ app.get("/samples/FRB", async (req, res) => {
 app.get("/samples/JPC", (req, res) => {
     const resultado = calcularJPC();
     res.send(`<h1>Resultado para Argentina</h1><p>Masa media: ${resultado} gramos.</p>`);
+});
+
+app.get("/samples/JGA", async (req, res) => {
+    try {
+        const resultado = await calcularJGA();
+        res.send(`<h1>Resultado para USA</h1> Masa media de lanzamiento: <p>: ${resultado} kg</p>`);
+    } catch (error) {
+        res.status(500).send("Error calculando la media");
+    }
 });
 
 // --- 7. INICIO DEL SERVIDOR ---
