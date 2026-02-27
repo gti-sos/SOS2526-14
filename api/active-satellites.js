@@ -4,7 +4,7 @@ const path = require("path");
 const csv = require('csvtojson');
 
 // Ruta a  CSV
-const satellites_csv = path.join(__dirname, "../data/active-satellites .csv");
+const satellites_csv = path.join(__dirname, "../data/active-satellites.csv");
 
 // Array en memoria para gestionar los datos (REQUISITO F04)
 let satellites = [];
