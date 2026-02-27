@@ -10,6 +10,8 @@ const cool = require("cool-ascii-faces");
 // --- 2. IMPORTACIÓN DE APIS MODULARES ---
 const spaceLaunchesAPI = require("./api/spaceLaunches.js");
 const meteoriteLandingsAPI = require("./api/meteorite-landings.js");
+const spaceLaunchesAPI = require("./api/spaceLaunches.js");
+
 
 const app = express();
 const BASE_URL_API = "/api/v1";
@@ -22,6 +24,7 @@ app.use(express.static("public"));
 // Usamos la variable BASE_URL_API para que todo sea consistente
 app.use(BASE_URL_API + "/space-launches", spaceLaunchesAPI);
 app.use(BASE_URL_API + "/meteorite-landings", meteoriteLandingsAPI);
+app.use(BASE_URL_API + "/active-satellites", spaceLaunchesAPI);
 
 // --- 5. RUTAS ESTÁTICAS Y DE CONTENIDO ---
 app.get("/", (req, res) => {
