@@ -54,7 +54,7 @@ app.get("/samples/JPC", (req, res) => {
 app.get("/samples/JGA", async (req, res) => {
     try {
         const resultado = await calcularJGA();
-        res.send(`<h1>Resultado para USA</h1> Masa media de lanzamiento: <p>: ${resultado} kg</p>`);
+        res.send(`<h1>Resultado para USA</h1> <p>Masa media de lanzamiento: ${resultado} kg</p>`);
     } catch (error) {
         res.status(500).send("Error calculando la media");
     }
