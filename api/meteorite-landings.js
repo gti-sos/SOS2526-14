@@ -14,7 +14,7 @@ let meteorites = [];
 router.get("/loadInitialData", (req, res) => {
     if (meteorites.length === 0) {
         csv().fromFile(meteorite_csv).then((datos) => {
-            meteorites = datos;
+            meteorites = datos.slice(0, 10);
             res.status(201).json({ message: "Datos cargados correctamente", count: meteorites.length });
         });
     } else {
