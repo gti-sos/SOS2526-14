@@ -17,7 +17,7 @@ const BASE_URL_API = "/api/v1";
 
 // --- 3. MIDDLEWARES ---
 app.use(express.json());
-app.use(express.static("public"));
+app.use("/", express.static("./public"));
 
 // --- 4. REGISTRO DE RUTAS DE API ---
 // Usamos la variable BASE_URL_API para que todo sea consistente
@@ -34,9 +34,6 @@ app.get("/cool", (req, res) => {
     res.send(`<pre>${cool()}</pre>`);
 });
 
-app.get("/about", (req, res) => {
-    res.sendFile(path.join(__dirname, "public/about.html"));
-});
 
 // --- 6. RUTAS DE PRUEBA (SAMPLES) ---
 app.get("/samples/FRB", async (req, res) => {
