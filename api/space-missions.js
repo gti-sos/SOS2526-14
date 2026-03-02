@@ -19,8 +19,6 @@ function loadCSV() {
         fs.createReadStream(filePath)
             .pipe(csv())
             .on("data", (row) => {
-
-                // Convertimos tipos correctamente
                 row.mission_id = Number(row.mission_id);
                 row.year = Number(row.year);
                 row.latitude = Number(row.latitude);
@@ -40,7 +38,21 @@ function loadCSV() {
 loadCSV();
 
 /* ================================
-   GET TODOS LOS DATOS
+   FUNCIÓN PARA REESCRIBIR CSV
+================================ */
+
+function saveCSV() {
+    const header = "mission_id,company_name,location,launch_date,year,latitude,longitude,cost,rocket_name,rocket_status,mission_status,country\n";
+
+    const rows = spaceLaunches.map(nuevo =>
+`${nuevo.mission_id},"${nuevo.company_name}","${nuevo.location}",${nuevo.launch_date},${nuevo.year},${nuevo.latitude},${nuevo.longitude},${nuevo.cost ?? ""},"${nuevo.rocket_name}",${nuevo.rocket_status},${nuevo.mission_status},${nuevo.country}`
+    ).join("\n");
+
+    fs.writeFileSync(filePath, header + rows + "\n");
+}
+
+/* ================================
+   GET TODOS
 ================================ */
 
 router.get("/", (req, res) => {
@@ -48,21 +60,17 @@ router.get("/", (req, res) => {
 });
 
 /* ================================
-   POST - AÑADIR NUEVO LANZAMIENTO
+   POST
 ================================ */
 
 router.post("/", (req, res) => {
 
     const nuevo = req.body;
 
-    // Validación básica
     if (!nuevo.mission_id || !nuevo.company_name) {
-        return res.status(400).json({
-            error: "Faltan campos obligatorios"
-        });
+        return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
 
-    // Convertimos tipos
     nuevo.mission_id = Number(nuevo.mission_id);
     nuevo.year = Number(nuevo.year);
     nuevo.latitude = Number(nuevo.latitude);
@@ -70,20 +78,60 @@ router.post("/", (req, res) => {
     nuevo.cost = nuevo.cost ? Number(nuevo.cost) : null;
 
     spaceLaunches.push(nuevo);
+    saveCSV();
 
-    // Creamos línea CSV EXACTAMENTE en el orden correcto
-    const linea =
-`${nuevo.mission_id},"${nuevo.company_name}","${nuevo.location}",${nuevo.launch_date},${nuevo.year},${nuevo.latitude},${nuevo.longitude},${nuevo.cost ?? ""},"${nuevo.rocket_name}",${nuevo.rocket_status},${nuevo.mission_status},${nuevo.country}\n`;
+    res.status(201).json(nuevo);
+});
 
-    fs.appendFile(filePath, linea, (err) => {
-        if (err) {
-            return res.status(500).json({
-                error: "Error escribiendo en CSV"
-            });
-        }
+/* ================================
+   PUT (actualizar por mission_id)
+================================ */
 
-        res.status(201).json(nuevo);
-    });
+router.put("/:mission_id", (req, res) => {
+
+    const id = Number(req.params.mission_id);
+    const index = spaceLaunches.findIndex(l => l.mission_id === id);
+
+    if (index === -1) {
+        return res.status(404).json({ error: "Mission no encontrada" });
+    }
+
+    const actualizado = {
+        ...spaceLaunches[index],
+        ...req.body
+    };
+
+    actualizado.mission_id = Number(actualizado.mission_id);
+    actualizado.year = Number(actualizado.year);
+    actualizado.latitude = Number(actualizado.latitude);
+    actualizado.longitude = Number(actualizado.longitude);
+    actualizado.cost = actualizado.cost ? Number(actualizado.cost) : null;
+
+    spaceLaunches[index] = actualizado;
+
+    saveCSV();
+
+    res.status(200).json(actualizado);
+});
+
+/* ================================
+   DELETE (por mission_id)
+================================ */
+
+router.delete("/:mission_id", (req, res) => {
+
+    const id = Number(req.params.mission_id);
+    const index = spaceLaunches.findIndex(l => l.mission_id === id);
+
+    if (index === -1) {
+        return res.status(404).json({ error: "Mission no encontrada" });
+    }
+
+    spaceLaunches.splice(index, 1);
+
+    saveCSV();
+
+    res.status(204).send();
 });
 
 module.exports = router;
