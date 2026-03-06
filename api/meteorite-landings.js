@@ -98,12 +98,12 @@ router.delete("/:name", (req, res) => {
 
 /* ================================
     4. MÉTODOS NO PERMITIDOS (405)
-================================ */
+================================ 
 router.post("/:name", (req, res) => res.status(405).json({ error: "No se puede hacer POST a un recurso concreto." }));
 router.put("/", (req, res) => res.status(405).json({ error: "No se puede hacer PUT a toda la lista." }));
 
 if (!login){
         return res.status(401).send('Unauthorized: No login provided');
     }
-
+*/
 module.exports = router;
