@@ -36,9 +36,29 @@ router.post("/", (req, res) => {
     const nuevo = req.body;
 
     // Validación simple: que tenga nombre e ID
-    if (!nuevo.name || !nuevo.id) {
-        res.status(400).json({ error: "Campo 'name' e 'id' son obligatorios." });
-    } 
+    const camposRequeridos = [
+        "id",
+        "name_type",
+        "class",
+        "mass",
+        "fall",
+        "year",
+        "latitude",
+        "longitude",
+        "geolocation",
+        "country"
+    ];
+
+    // Buscar campos faltantes
+    const camposFaltantes = camposRequeridos.filter(campo => !nuevo[campo]);
+
+    if (camposFaltantes.length > 0) {
+        return res.status(400).json({
+            error: "Faltan campos obligatorios",
+            faltantes: camposFaltantes
+        });
+    }
+
     // Comprobar si ya existe (Conflict)
     else if (meteorites.find(m => m.name.toLowerCase() === nuevo.name.toLowerCase())) {
         res.status(409).json({ error: "Ese meteorito ya existe." });
