@@ -1,0 +1,22 @@
+{
+	"id": "f3120c66-2844-4ac9-ae1e-d3b1f047e406",
+	"name": "local",
+	"values": [
+		{
+			"key": "base-url",
+			"value": "localhost:10000",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "api",
+			"value": "/api/v1/",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"color": null,
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2026-03-11T09:19:37.636Z",
+	"_postman_exported_using": "Postman/12.1.2-260311-0232"
+}

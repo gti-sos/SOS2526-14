@@ -1,0 +1,252 @@
+{
+  "info": {
+    "_postman_id": "8d6beaf7-ae4e-4863-b4d3-fd0873d2e393",
+    "name": "SOS2525-jeremias",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52378516",
+    "_collection_link": "https://go.postman.co/collection/52378516-8d6beaf7-ae4e-4863-b4d3-fd0873d2e393?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "GET/meteorite-landings -200",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base-url}}{{api}}meteorite-landings",
+          "host": [
+            "{{base-url}}{{api}}meteorite-landings"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET/meteorite-landings/Santiago -404",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Mairena\",\r\n    \"id\": \"9999\",\r\n    \"name_type\": \"Valid\",\r\n    \"class\": \"L5\",\r\n    \"mass\": \"700\",\r\n    \"fall\": \"Fell\",\r\n    \"year\": \"2024.0\",\r\n    \"latitude\": \"37.33\",\r\n    \"longitude\": \"-6.06\",\r\n    \"geolocation\": \"(37.33, -6.06)\",\r\n    \"country\": \"Spain\"\r\n}"
+        },
+        "url": {
+          "raw": "{{base-url}}{{api}}meteorite-landings/Santiago",
+          "host": [
+            "{{base-url}}{{api}}meteorite-landings"
+          ],
+          "path": [
+            "Santiago"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET/loadInitialData",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base-url}}{{api}}meteorite-landings/loadInitialData",
+          "host": [
+            "{{base-url}}{{api}}meteorite-landings"
+          ],
+          "path": [
+            "loadInitialData"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "POST/meteorite-landings - 400",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"id\": \"9999\",\r\n    \"name_type\": \"Valid\",\r\n    \"class\": \"L5\",\r\n    \"mass\": \"500\",\r\n    \"fall\": \"Fell\",\r\n    \"year\": \"2024.0\",\r\n    \"latitude\": \"37.33\",\r\n    \"longitude\": \"-6.06\",\r\n    \"geolocation\": \"(37.33, -6.06)\",\r\n    \"country\": \"Spain\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base-url}}{{api}}meteorite-landings",
+          "host": [
+            "{{base-url}}{{api}}meteorite-landings"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "POST/meteorite-landings - 201 / 409 Mairena",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Mairena\",\r\n    \"id\": \"9999\",\r\n    \"name_type\": \"Valid\",\r\n    \"class\": \"L5\",\r\n    \"mass\": \"500\",\r\n    \"fall\": \"Fell\",\r\n    \"year\": \"2024.0\",\r\n    \"latitude\": \"37.33\",\r\n    \"longitude\": \"-6.06\",\r\n    \"geolocation\": \"(37.33, -6.06)\",\r\n    \"country\": \"Spain\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base-url}}{{api}}meteorite-landings",
+          "host": [
+            "{{base-url}}{{api}}meteorite-landings"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "POST/meteorite-landings - 405",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Mairena\",\r\n    \"id\": \"9999\",\r\n    \"name_type\": \"Valid\",\r\n    \"class\": \"L5\",\r\n    \"mass\": \"500\",\r\n    \"fall\": \"Fell\",\r\n    \"year\": \"2024.0\",\r\n    \"latitude\": \"37.33\",\r\n    \"longitude\": \"-6.06\",\r\n    \"geolocation\": \"(37.33, -6.06)\",\r\n    \"country\": \"Spain\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base-url}}{{api}}meteorite-landings/Aachen",
+          "host": [
+            "{{base-url}}{{api}}meteorite-landings"
+          ],
+          "path": [
+            "Aachen"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "PUT/meteorite-landings/Mairena",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Mairena\",\r\n    \"id\": \"9999\",\r\n    \"name_type\": \"Valid\",\r\n    \"class\": \"L5\",\r\n    \"mass\": \"700\",\r\n    \"fall\": \"Fell\",\r\n    \"year\": \"2024.0\",\r\n    \"latitude\": \"37.33\",\r\n    \"longitude\": \"-6.06\",\r\n    \"geolocation\": \"(37.33, -6.06)\",\r\n    \"country\": \"Spain\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base-url}}{{api}}meteorite-landings/Mairena",
+          "host": [
+            "{{base-url}}{{api}}meteorite-landings"
+          ],
+          "path": [
+            "Mairena"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "PUT/meteorite-landings - 405",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Mairena\",\r\n    \"id\": \"9999\",\r\n    \"name_type\": \"Valid\",\r\n    \"class\": \"L5\",\r\n    \"mass\": \"700\",\r\n    \"fall\": \"Fell\",\r\n    \"year\": \"2024.0\",\r\n    \"latitude\": \"37.33\",\r\n    \"longitude\": \"-6.06\",\r\n    \"geolocation\": \"(37.33, -6.06)\",\r\n    \"country\": \"Spain\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base-url}}{{api}}meteorite-landings",
+          "host": [
+            "{{base-url}}{{api}}meteorite-landings"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "PUT/meteorite-landings - 400",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Mairena\",\r\n    \"id\": \"9999\",\r\n    \"name_type\": \"Valid\",\r\n    \"class\": \"L5\",\r\n    \"mass\": \"700\",\r\n    \"fall\": \"Fell\",\r\n    \"year\": \"2024.0\",\r\n    \"latitude\": \"37.33\",\r\n    \"longitude\": \"-6.06\",\r\n    \"geolocation\": \"(37.33, -6.06)\",\r\n    \"country\": \"Spain\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base-url}}{{api}}meteorite-landings/Santiago",
+          "host": [
+            "{{base-url}}{{api}}meteorite-landings"
+          ],
+          "path": [
+            "Santiago"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "DELETE/meteorite-landings/Aachen",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Mairena\",\r\n    \"id\": \"9999\",\r\n    \"name_type\": \"Valid\",\r\n    \"class\": \"L5\",\r\n    \"mass\": \"700\",\r\n    \"fall\": \"Fell\",\r\n    \"year\": \"2024.0\",\r\n    \"latitude\": \"37.33\",\r\n    \"longitude\": \"-6.06\",\r\n    \"geolocation\": \"(37.33, -6.06)\",\r\n    \"country\": \"Spain\"\r\n}"
+        },
+        "url": {
+          "raw": "{{base-url}}{{api}}meteorite-landings/Aachen",
+          "host": [
+            "{{base-url}}{{api}}meteorite-landings"
+          ],
+          "path": [
+            "Aachen"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "DELETE/meteorite-landings",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Mairena\",\r\n    \"id\": \"9999\",\r\n    \"name_type\": \"Valid\",\r\n    \"class\": \"L5\",\r\n    \"mass\": \"700\",\r\n    \"fall\": \"Fell\",\r\n    \"year\": \"2024.0\",\r\n    \"latitude\": \"37.33\",\r\n    \"longitude\": \"-6.06\",\r\n    \"geolocation\": \"(37.33, -6.06)\",\r\n    \"country\": \"Spain\"\r\n}"
+        },
+        "url": {
+          "raw": "{{base-url}}{{api}}meteorite-landings",
+          "host": [
+            "{{base-url}}{{api}}meteorite-landings"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
