@@ -7,9 +7,10 @@ const csv = require("csvtojson");
 // Corregido a 3 niveles para llegar a la raíz desde src/back/api
 const csvFile = path.join(__dirname, "/../data/space-missions-with-country.csv");
 
-const db = new Datastore({
-    filename: "/../data/space-launches.db",
-    autoload: true
+// BORRA LA LÍNEA ANTERIOR Y PON ESTA:
+const db = new Datastore({ 
+    filename: path.join(process.cwd(), "data", "space-launches.db"), 
+    autoload: true 
 });
 
 /* ================================
