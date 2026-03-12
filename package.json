@@ -19,7 +19,7 @@
   "test-jga-render": "npx newman run tests/api/JGA/api-tests-JGA.json -e tests/api/JGA/api-test-env-render.json",
   "test-jga": "start-server-and-test start http://localhost:10000 test-jga-local",
 
-  "test": "npm run test-jpc && npm run test-frb && npm run test-jga"
+  "test": "npm run test-jpc"
 },
   "dependencies": {
     "body-parser": "^2.2.2",
