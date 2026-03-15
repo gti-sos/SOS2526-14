@@ -368,7 +368,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"ADLER-2\",\"country\":\"Austria\",\"launch_date\":\"2023-04-15\",\"launch_mass\":\"11.5\",\"expected_lifetime\":\"\",,\"perigee_height\":\"497.0\"}",
+          "raw": "{\"name\":\"ADLR-2\",\"country\":\"Aust\",\"launch_date\":\"2023-04-15\",\"launch_mass\":\"11.5\",\"expected_lifetime\":\"\"\"perigee_height\":\"497.0\"}",
           "options": {
             "raw": {
               "language": "json"
