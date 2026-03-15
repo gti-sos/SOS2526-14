@@ -4,24 +4,26 @@ const path = require("path");
 const csv = require('csvtojson');
 const DataStore = require("@seald-io/nedb");
 
-// Ruta a la base de datos y CSV respetando tu estructura de carpetas
 const dbFile = path.join(__dirname, "../data/satellites.db");
 const db = new DataStore({ filename: dbFile, autoload: true });
 const satellites_csv = path.join(__dirname, "../data/active-satellites.csv");
 
-// Validación estricta de estructura (Requisito: 400 si no es exacta)
+// Forzar que todas las respuestas sean JSON
+router.use((req, res, next) => {
+    res.setHeader("Content-Type", "application/json");
+    next();
+});
+
 function hasCorrectStructure(obj) {
     const fields = ["name", "country", "launch_date", "launch_mass", "expected_lifetime", "apogee_height", "perigee_height"];
     const keys = Object.keys(obj);
     return fields.length === keys.length && fields.every(f => keys.includes(f));
 }
 
-// DOCS: Redirección a Postman (Requisito L06)
 router.get("/docs", (req, res) => {
     res.redirect("https://documenter.getpostman.com/view/52241995/2sBXigMZ5R");
 });
 
-// CARGA INICIAL (Solo envía código de estado)
 router.get("/loadInitialData", (req, res) => {
     db.count({}, (err, count) => {
         if (err) return res.sendStatus(500);
@@ -33,19 +35,15 @@ router.get("/loadInitialData", (req, res) => {
                 });
             });
         } else {
-            res.sendStatus(400); // Ya inicializada
+            res.sendStatus(400);
         }
     });
 });
 
-/* ============================================================
-    COLECCIÓN (GET /) -> Devuelve siempre un ARRAY [ ]
-============================================================ */
 router.get("/", (req, res) => {
     const { limit, offset, ...filters } = req.query;
     let search = {};
     
-    // Búsquedas por todos los campos (L05)
     if (filters.name) search.name = new RegExp('^' + filters.name + '$', "i");
     if (filters.country) search.country = new RegExp('^' + filters.country + '$', "i");
     if (filters.launch_date) search.launch_date = filters.launch_date;
@@ -59,7 +57,7 @@ router.get("/", (req, res) => {
       .limit(parseInt(limit) || 0)
       .exec((err, docs) => {
         if (err) return res.sendStatus(500);
-        res.status(200).json(docs); // Siempre Array
+        res.status(200).json(docs);
     });
 });
 
@@ -84,9 +82,6 @@ router.delete("/", (req, res) => {
     });
 });
 
-/* ============================================================
-    RECURSO CONCRETO (GET /country/name) -> Devuelve siempre OBJETO { }
-============================================================ */
 router.get("/:country/:name", (req, res) => {
     db.findOne({ 
         country: new RegExp('^' + req.params.country + '$', "i"), 
@@ -94,7 +89,7 @@ router.get("/:country/:name", (req, res) => {
     }, { _id: 0 }, (err, doc) => {
         if (err) return res.sendStatus(500);
         if (!doc) return res.sendStatus(404);
-        res.status(200).json(doc); // Siempre Objeto
+        res.status(200).json(doc);
     });
 });
 
@@ -126,8 +121,12 @@ router.delete("/:country/:name", (req, res) => {
     });
 });
 
-// Métodos no permitidos
 router.post("/:country/:name", (req, res) => res.sendStatus(405));
 router.put("/", (req, res) => res.sendStatus(405));
+
+// Catch-all para evitar HTML en 404
+router.use((req, res) => {
+    res.sendStatus(404);
+});
 
 module.exports = router;
