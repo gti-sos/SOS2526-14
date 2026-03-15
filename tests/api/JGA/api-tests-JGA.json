@@ -1,10 +1,8 @@
 {
   "info": {
-    "_postman_id": "20c993c3-3012-4019-b65e-d5e8e4daf3fe",
+    "_postman_id": "c349ea48-30d9-456e-8e0a-dedc01306ff4",
     "name": "L06",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "52241995",
-    "_collection_link": "https://go.postman.co/collection/52241995-20c993c3-3012-4019-b65e-d5e8e4daf3fe?source=collection_link"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
@@ -14,8 +12,8 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200, 201 or 400\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400]);",
+              "pm.test(\"Status code is 201 or 400\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([201, 400]);",
               "});"
             ],
             "type": "text/javascript"
@@ -24,14 +22,12 @@
       ],
       "request": {
         "method": "GET",
-        "header": [],
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/loadInitialData",
           "host": ["{{Render}}"],
           "path": ["api", "v1", "active-satellites", "loadInitialData"]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "GET-200",
@@ -48,23 +44,18 @@
           }
         }
       ],
-      "protocolProfileBehavior": {
-        "disableBodyPruning": true
-      },
       "request": {
         "method": "GET",
-        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"Ejemplo\",\r\n\"country\":\"Multinational\",\r\n\"launch_date\":\"2015-03-02\",\r\n\"launch_mass\":\"2000.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35803.0\",\"perigee_height\":\"35788.0\"}\r\n"
+          "raw": "{\"name\":\"Ejemplo\",\"country\":\"Multinational\",\"launch_date\":\"2015-03-02\",\"launch_mass\":\"2000.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35803.0\",\"perigee_height\":\"35788.0\"}"
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/",
           "host": ["{{Render}}"],
           "path": ["api", "v1", "active-satellites", ""]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "Get recurso-200",
@@ -73,8 +64,8 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200 or 404\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
               "});"
             ],
             "type": "text/javascript"
@@ -83,14 +74,12 @@
       ],
       "request": {
         "method": "GET",
-        "header": [],
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/Taiwan/COSMIC-B",
           "host": ["{{Render}}"],
           "path": ["api", "v1", "active-satellites", "Taiwan", "COSMIC-B"]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "GET recurso no existente 404",
@@ -107,24 +96,14 @@
           }
         }
       ],
-      "protocolProfileBehavior": {
-        "disableBodyPruning": true
-      },
       "request": {
         "method": "GET",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "",
-          "options": { "raw": { "language": "json" } }
-        },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellit",
           "host": ["{{Render}}"],
           "path": ["api", "v1", "active-satellit"]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "DELETE-200",
@@ -133,8 +112,8 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200 or 204\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
               "});"
             ],
             "type": "text/javascript"
@@ -143,14 +122,36 @@
       ],
       "request": {
         "method": "DELETE",
-        "header": [],
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites",
           "host": ["{{Render}}"],
           "path": ["api", "v1", "active-satellites"]
         }
-      },
-      "response": []
+      }
+    },
+    {
+      "name": "GET datos",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201 or 400\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([201, 400]);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{Render}}/api/v1/active-satellites/loadInitialData",
+          "host": ["{{Render}}"],
+          "path": ["api", "v1", "active-satellites", "loadInitialData"]
+        }
+      }
     },
     {
       "name": "Delete recurso-200",
@@ -169,14 +170,12 @@
       ],
       "request": {
         "method": "DELETE",
-        "header": [],
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/Taiwan/COSMIC-B",
           "host": ["{{Render}}"],
           "path": ["api", "v1", "active-satellites", "Taiwan", "COSMIC-B"]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "Delete recurso NOT FOUND-404",
@@ -195,14 +194,12 @@
       ],
       "request": {
         "method": "DELETE",
-        "header": [],
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/1HOPSAT-TD",
           "host": ["{{Render}}"],
           "path": ["api", "v1", "active-satellites", "1HOPSAT-TD"]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "POST recurso concreto-405",
@@ -221,19 +218,16 @@
       ],
       "request": {
         "method": "POST",
-        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"Ejemplo\",\r\n\"country\":\"Multinational\",\r\n\"launch_date\":\"2015-03-02\",\r\n\"launch_mass\":\"2000.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35803.0\",\"perigee_height\":\"35788.0\"}\r\n",
-          "options": { "raw": { "language": "json" } }
+          "raw": "{\"name\":\"Ejemplo\",\"country\":\"Multinational\",\"launch_date\":\"2015-03-02\",\"launch_mass\":\"2000.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35803.0\",\"perigee_height\":\"35788.0\"}"
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/Taiwan/COSMIC-B",
           "host": ["{{Render}}"],
           "path": ["api", "v1", "active-satellites", "Taiwan", "COSMIC-B"]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "POST 201",
@@ -252,19 +246,16 @@
       ],
       "request": {
         "method": "POST",
-        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"Ejemplo\",\r\n\"country\":\"Multinational\",\r\n\"launch_date\":\"2015-03-02\",\r\n\"launch_mass\":\"2000.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35803.0\",\"perigee_height\":\"35788.0\"}\r\n",
-          "options": { "raw": { "language": "json" } }
+          "raw": "{\"name\":\"Ejemplo\",\"country\":\"Multinational\",\"launch_date\":\"2015-03-02\",\"launch_mass\":\"2000.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35803.0\",\"perigee_height\":\"35788.0\"}"
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites",
           "host": ["{{Render}}"],
           "path": ["api", "v1", "active-satellites"]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "POST 409",
@@ -283,19 +274,16 @@
       ],
       "request": {
         "method": "POST",
-        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"Baoyun\",\"country\":\"China\",\"launch_date\":\"2014-02-06\",\"launch_mass\":\"6330.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35793.0\",\"perigee_height\":\"35778.0\"}",
-          "options": { "raw": { "language": "json" } }
+          "raw": "{\"name\":\"Baoyun\",\"country\":\"China\",\"launch_date\":\"2014-02-06\",\"launch_mass\":\"6330.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35793.0\",\"perigee_height\":\"35778.0\"}"
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/",
           "host": ["{{Render}}"],
           "path": ["api", "v1", "active-satellites", ""]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "Put correcto-200",
@@ -314,19 +302,16 @@
       ],
       "request": {
         "method": "PUT",
-        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"GOES-13\",\"country\":\"USA\",\"launch_date\":\"2014-02-06\",\"launch_mass\":\"6330.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35793.0\",\"perigee_height\":\"35778.0\"}",
-          "options": { "raw": { "language": "json" } }
+          "raw": "{\"name\":\"GOES-13\",\"country\":\"USA\",\"launch_date\":\"2014-02-06\",\"launch_mass\":\"6330.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35793.0\",\"perigee_height\":\"35778.0\"}"
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/USA/GOES-13",
           "host": ["{{Render}}"],
           "path": ["api", "v1", "active-satellites", "USA", "GOES-13"]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "Put a toda la lista 405",
@@ -345,19 +330,16 @@
       ],
       "request": {
         "method": "PUT",
-        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"ABS-2\",\"country\":\"España\",\"launch_date\":\"2014-02-06\",\"launch_mass\":\"6330.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35793.0\",\"perigee_height\":\"35778.0\"}",
-          "options": { "raw": { "language": "json" } }
+          "raw": "{\"name\":\"ABS-2\",\"country\":\"España\",\"launch_date\":\"2014-02-06\",\"launch_mass\":\"6330.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35793.0\",\"perigee_height\":\"35778.0\"}"
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites",
           "host": ["{{Render}}"],
           "path": ["api", "v1", "active-satellites"]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "PUT 400",
@@ -376,19 +358,44 @@
       ],
       "request": {
         "method": "PUT",
-        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"ADLER-2\",\"country\":\"Austria\",\"launch_date\":\"2023-04-15\",\"launch_mass\":\"11.5\",\"expected_lifetime\":\"\",\"apogee_height\":\"506.0\",\"perigee_height\":\"497.0\"}",
-          "options": { "raw": { "language": "json" } }
+          "raw": "{\"name\":\"ADLER-2\",\"country\":\"Austria\",\"launch_date\":\"2023-04-15\",\"launch_mass\":\"11.5\",\"expected_lifetime\":\"\",\"apogee_height\":\"506.0\",\"perigee_height\":\"497.0\"}"
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/Taiwan/COSMIC-B",
           "host": ["{{Render}}"],
           "path": ["api", "v1", "active-satellites", "Taiwan", "COSMIC-B"]
         }
-      },
-      "response": []
+      }
+    },
+    {
+      "name": "PUT campos incorrectos 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 400\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\":\"ADLR-2\",\"country\":\"Aust\",\"launch_date\":\"2023-04-15\",\"launch_mass\":\"11.5\",\"expected_lifetime\":\"\",\"perigee_height\":\"497.0\"}"
+        },
+        "url": {
+          "raw": "{{Render}}/api/v1/active-satellites/ABS-2",
+          "host": ["{{Render}}"],
+          "path": ["api", "v1", "active-satellites", "ABS-2"]
+        }
+      }
     }
   ]
 }
