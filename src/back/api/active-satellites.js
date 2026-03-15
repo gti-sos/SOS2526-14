@@ -32,6 +32,11 @@ router.get("/loadInitialData", (req, res) => {
     });
 });
 
+
+router.get("/docs", (req, res) => {
+    // IMPORTANTE: Sustituye este enlace por tu URL pública de Postman
+    res.redirect("https://documenter.getpostman.com/view/52241995/2sBXigMZ5R");
+});
 /* ============================================================
     COLECCIÓN (Acciones sobre / ) -> Siempre devuelve ARRAY en GET
 ============================================================ */
