@@ -1,10 +1,10 @@
 {
   "info": {
-    "_postman_id": "c349ea48-30d9-456e-8e0a-dedc01306ff4",
+    "_postman_id": "20c993c3-3012-4019-b65e-d5e8e4daf3fe",
     "name": "L06",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "52241995",
-    "_collection_link": "https://go.postman.co/collection/52241995-c349ea48-30d9-456e-8e0a-dedc01306ff4?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/52241995-20c993c3-3012-4019-b65e-d5e8e4daf3fe?source=collection_link"
   },
   "item": [
     {
@@ -356,35 +356,6 @@
             "active-satellites",
             "Taiwan",
             "COSMIC-B"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "PUT campos incorrectos 400",
-      "request": {
-        "method": "PUT",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"name\":\"ADLR-2\",\"country\":\"Aust\",\"launch_date\":\"2023-04-15\",\"launch_mass\":\"11.5\",\"expected_lifetime\":\"\"\"perigee_height\":\"497.0\"}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{Render}}/api/v1/active-satellites/ABS-2",
-          "host": [
-            "{{Render}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "active-satellites",
-            "ABS-2"
           ]
         }
       },
