@@ -15,6 +15,11 @@ function hasCorrectStructure(obj) {
     return fields.length === keys.length && fields.every(f => keys.includes(f));
 }
 
+
+router.get("/docs", (req, res) => {
+    // IMPORTANTE: Sustituye este enlace por tu URL pública de Postman
+    res.redirect("https://documenter.getpostman.com/view/52241995/2sBXigMZ5R");
+});
 // 1. CARGA INICIAL
 router.get("/loadInitialData", (req, res) => {
     db.count({}, (err, count) => {
