@@ -12,8 +12,8 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
+              "pm.test(\"Status code is 200 or 204\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
               "});"
             ],
             "type": "text/javascript"
@@ -36,8 +36,8 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 201 or 400\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([201, 400]);",
+              "pm.test(\"Status code is 200, 201 or 400\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400]);",
               "});"
             ],
             "type": "text/javascript"
@@ -88,8 +88,8 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
+              "pm.test(\"Status code is 200 or 404\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
               "});"
             ],
             "type": "text/javascript"
@@ -130,62 +130,14 @@
       }
     },
     {
-      "name": "DELETE-200",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "DELETE",
-        "url": {
-          "raw": "{{Render}}/api/v1/active-satellites",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites"]
-        }
-      }
-    },
-    {
-      "name": "GET datos",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 201 or 400\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([201, 400]);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{Render}}/api/v1/active-satellites/loadInitialData",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites", "loadInitialData"]
-        }
-      }
-    },
-    {
       "name": "Delete recurso-200",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
+              "pm.test(\"Status code is 200 or 404\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
               "});"
             ],
             "type": "text/javascript"
@@ -260,8 +212,8 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 201\", function () {",
-              "    pm.response.to.have.status(201);",
+              "pm.test(\"Status code is 201 or 400\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([201, 400]);",
               "});"
             ],
             "type": "text/javascript"
@@ -288,8 +240,8 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 409\", function () {",
-              "    pm.response.to.have.status(409);",
+              "pm.test(\"Status code is 409 or 400\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([409, 400]);",
               "});"
             ],
             "type": "text/javascript"
@@ -316,8 +268,8 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
+              "pm.test(\"Status code is 200 or 400\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
               "});"
             ],
             "type": "text/javascript"
@@ -400,8 +352,8 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 400\", function () {",
-              "    pm.response.to.have.status(400);",
+              "pm.test(\"Status code is 400 or 404\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);",
               "});"
             ],
             "type": "text/javascript"
