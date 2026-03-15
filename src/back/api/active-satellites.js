@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const path = require("path");
 const csv = require('csvtojson');
-const DataStore = require('nedb');
+const DataStore = require("@seald-io/nedb");
 
 // 1. Configuración de NeDB (Sustituye al array en memoria)
 const dbFile = path.join(__dirname, "../data/satellites.db");
