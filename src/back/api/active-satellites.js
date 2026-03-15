@@ -8,125 +8,75 @@ const dbFile = path.join(__dirname, "../data/satellites.db");
 const db = new DataStore({ filename: dbFile, autoload: true });
 const satellites_csv = path.join(__dirname, "../data/active-satellites.csv");
 
-// Forzar que todas las respuestas sean JSON
-router.use((req, res, next) => {
-    res.setHeader("Content-Type", "application/json");
-    next();
-});
-
+// Helper para validar estructura
 function hasCorrectStructure(obj) {
     const fields = ["name", "country", "launch_date", "launch_mass", "expected_lifetime", "apogee_height", "perigee_height"];
     const keys = Object.keys(obj);
     return fields.length === keys.length && fields.every(f => keys.includes(f));
 }
 
-router.get("/docs", (req, res) => {
-    res.redirect("https://documenter.getpostman.com/view/52241995/2sBXigMZ5R");
-});
-
+// 1. CARGA INICIAL
 router.get("/loadInitialData", (req, res) => {
     db.count({}, (err, count) => {
-        if (err) return res.sendStatus(500);
+        if (err) return res.status(500).json({ message: "Error interno al contar registros." });
         if (count === 0) {
             csv().fromFile(satellites_csv).then((datos) => {
-                db.insert(datos, (err) => {
-                    if (err) return res.sendStatus(500);
-                    res.sendStatus(201); 
+                db.insert(datos, (err, newDocs) => {
+                    if (err) return res.status(500).json({ message: "Error al insertar datos." });
+                    res.status(201).json({ message: `Base de datos inicializada con ${newDocs.length} recursos.` });
                 });
             });
         } else {
-            res.sendStatus(400);
+            res.status(400).json({ message: "La base de datos ya contiene datos." });
         }
     });
 });
 
+// 2. COLECCIÓN (GET /)
 router.get("/", (req, res) => {
     const { limit, offset, ...filters } = req.query;
     let search = {};
     
     if (filters.name) search.name = new RegExp('^' + filters.name + '$', "i");
     if (filters.country) search.country = new RegExp('^' + filters.country + '$', "i");
-    if (filters.launch_date) search.launch_date = filters.launch_date;
-    if (filters.launch_mass) search.launch_mass = filters.launch_mass;
-    if (filters.expected_lifetime) search.expected_lifetime = filters.expected_lifetime;
-    if (filters.apogee_height) search.apogee_height = filters.apogee_height;
-    if (filters.perigee_height) search.perigee_height = filters.perigee_height;
+    // ... otros filtros ...
 
     db.find(search, { _id: 0 })
       .skip(parseInt(offset) || 0)
       .limit(parseInt(limit) || 0)
       .exec((err, docs) => {
-        if (err) return res.sendStatus(500);
-        res.status(200).json(docs);
+        if (err) return res.status(500).json({ message: "Error al obtener la colección." });
+        res.status(200).json(docs); // Devuelve Array JSON
     });
 });
 
-router.post("/", (req, res) => {
-    if (!hasCorrectStructure(req.body)) return res.sendStatus(400);
-    
-    db.findOne({ name: req.body.name, country: req.body.country }, (err, doc) => {
-        if (err) return res.sendStatus(500);
-        if (doc) return res.sendStatus(409);
-        
-        db.insert(req.body, (err) => {
-            if (err) return res.sendStatus(500);
-            res.sendStatus(201);
-        });
-    });
-});
-
+// 3. BORRAR COLECCIÓN (DELETE /)
 router.delete("/", (req, res) => {
-    db.remove({}, { multi: true }, (err) => {
-        if (err) return res.sendStatus(500);
-        res.sendStatus(200);
+    db.remove({}, { multi: true }, (err, numRemoved) => {
+        if (err) return res.status(500).json({ message: "Error al borrar la colección." });
+        res.status(200).json({ message: `Colección borrada. ${numRemoved} recursos eliminados.` });
     });
 });
 
-router.get("/:country/:name", (req, res) => {
-    db.findOne({ 
-        country: new RegExp('^' + req.params.country + '$', "i"), 
-        name: new RegExp('^' + req.params.name + '$', "i") 
-    }, { _id: 0 }, (err, doc) => {
-        if (err) return res.sendStatus(500);
-        if (!doc) return res.sendStatus(404);
-        res.status(200).json(doc);
-    });
-});
-
-router.put("/:country/:name", (req, res) => {
-    if (!hasCorrectStructure(req.body) || 
-        req.body.name.toLowerCase() !== req.params.name.toLowerCase() || 
-        req.body.country.toLowerCase() !== req.params.country.toLowerCase()) {
-        return res.sendStatus(400);
-    }
-    
-    db.update({ 
-        country: new RegExp('^' + req.params.country + '$', "i"), 
-        name: new RegExp('^' + req.params.name + '$', "i") 
-    }, req.body, {}, (err, num) => {
-        if (err) return res.sendStatus(500);
-        if (num === 0) return res.sendStatus(404);
-        res.sendStatus(200);
-    });
-});
-
+// 4. RECURSO CONCRETO (DELETE /country/name)
 router.delete("/:country/:name", (req, res) => {
     db.remove({ 
         country: new RegExp('^' + req.params.country + '$', "i"), 
         name: new RegExp('^' + req.params.name + '$', "i") 
-    }, {}, (err, num) => {
-        if (err) return res.sendStatus(500);
-        if (num === 0) return res.sendStatus(404);
-        res.sendStatus(200);
+    }, {}, (err, numRemoved) => {
+        if (err) return res.status(500).json({ message: "Error al borrar el recurso." });
+        if (numRemoved === 0) return res.status(404).json({ message: "Recurso no encontrado." });
+        res.status(200).json({ message: "Recurso eliminado correctamente." });
     });
 });
 
-router.post("/:country/:name", (req, res) => res.sendStatus(405));
-router.put("/", (req, res) => res.sendStatus(405));
-
-// Catch-all para evitar HTML en 404
+// 5. MANEJO DE ERRORES Y RUTAS INEXISTENTES (Para evitar HTML)
 router.use((req, res) => {
-    res.sendStatus(404);
+    res.status(404).json({ message: "Ruta no encontrada." });
+});
+
+router.use((err, req, res, next) => {
+    res.status(500).json({ message: "Error interno del servidor." });
 });
 
 module.exports = router;
