@@ -40,7 +40,38 @@ router.get("/docs", (req, res) => {
 /* ============================================================
     COLECCIÓN (Acciones sobre / ) -> Siempre devuelve ARRAY en GET
 ============================================================ */
+/* ============================================================
+    COLECCIÓN (Acciones sobre / ) -> Siempre devuelve ARRAY en GET
+============================================================ */
 
+// GET Colección (Con filtros por todos los campos, offset y limit)
+router.get("/", (req, res) => {
+    const { limit, offset, ...filters } = req.query;
+    let search = {};
+    
+    // --- FILTROS DE TEXTO (Case Insensitive) ---
+    if (filters.name) search.name = new RegExp('^' + filters.name + '$', "i");
+    if (filters.country) search.country = new RegExp('^' + filters.country + '$', "i");
+    if (filters.launch_date) search.launch_date = new RegExp('^' + filters.launch_date + '$', "i");
+
+    // --- FILTROS NUMÉRICOS ---
+    // En NeDB, si los datos se guardaron como strings (por el CSV), 
+    // filtramos como string. Si los convertiste a número, quita las comillas.
+    if (filters.launch_mass) search.launch_mass = filters.launch_mass;
+    if (filters.expected_lifetime) search.expected_lifetime = filters.expected_lifetime;
+    if (filters.apogee_height) search.apogee_height = filters.apogee_height;
+    if (filters.perigee_height) search.perigee_height = filters.perigee_height;
+
+    db.find(search, { _id: 0 })
+      .skip(parseInt(offset) || 0)
+      .limit(parseInt(limit) || 0)
+      .exec((err, docs) => {
+        if (err) {
+            return res.status(500).json({ message: "Error al obtener datos." });
+        }
+        res.status(200).json(docs); 
+    });
+});
 // GET Colección (Con filtros, offset y limit)
 router.get("/", (req, res) => {
     const { limit, offset, ...filters } = req.query;
