@@ -8,39 +8,6 @@
   },
   "item": [
     {
-      "name": "DELETE/meteorite-landings",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200\", function () {\r",
-              "    pm.response.to.have.status(200);\r",
-              "});"
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": ""
-        },
-        "url": {
-          "raw": "{{base-url}}{{api}}meteorite-landings",
-          "host": [
-            "{{base-url}}{{api}}meteorite-landings"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
       "name": "GET/meteorite-landings -200 []",
       "event": [
         {
@@ -598,39 +565,6 @@
           "path": [
             "Chile",
             "Santiago"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "DELETE/meteorite-landings",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200\", function () {\r",
-              "    pm.response.to.have.status(200);\r",
-              "});"
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": ""
-        },
-        "url": {
-          "raw": "{{base-url}}{{api}}meteorite-landings",
-          "host": [
-            "{{base-url}}{{api}}meteorite-landings"
           ]
         }
       },
