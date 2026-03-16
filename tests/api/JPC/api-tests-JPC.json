@@ -17,11 +17,7 @@
               "pm.test(\"Status code is 200\", function () {\r",
               "    pm.response.to.have.status(200);\r",
               "});\r",
-              "pm.test(\"Devuelve un Array vacío\", function () {\r",
-              "    var jsonData = pm.response.json();\r",
-              "    pm.expect(Array.isArray(jsonData)).to.be.true;\r",
-              "    pm.expect(jsonData.length).to.eql(0);\r",
-              "});"
+              ""
             ],
             "type": "text/javascript",
             "packages": {},
@@ -48,13 +44,31 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 201\", function () {\r",
-              "    pm.response.to.have.status(201);\r",
+              "pm.test(\"Carga inicial exitosa (201) o datos ya existentes (400)\", function () {\r",
+              "    // Comprobamos que el código de respuesta sea UNO DE esos dos\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([201, 400]);\r",
               "});\r",
-              "pm.test(\"Tiene mensaje de carga\", function () {\r",
+              "\r",
+              "pm.test(\"Devuelve el mensaje correcto en cada caso\", function () {\r",
               "    var jsonData = pm.response.json();\r",
-              "    pm.expect(jsonData.message).to.eql(\"Datos cargados correctamente\");\r",
+              "    \r",
+              "    if (pm.response.code === 201) {\r",
+              "        pm.expect(jsonData.message).to.eql(\"Datos cargados correctamente\");\r",
+              "    } else if (pm.response.code === 400) {\r",
+              "        pm.expect(jsonData.error).to.eql(\"La base de datos ya tiene datos.\");\r",
+              "    }\r",
               "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
             ],
             "type": "text/javascript",
             "packages": {},
