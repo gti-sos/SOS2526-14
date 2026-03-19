@@ -97,8 +97,8 @@ router.get("/", (req, res) => {
       .limit(limit)
       .exec((err, docs) => {
           if (err) return res.status(500).json({ error: "Error en la base de datos" });
-          if(docs.length===1)
-            docs = docs[0]
+          //if(docs.length===1)
+            //docs = docs[0]
           res.status(200).json(docs);
       });
 });

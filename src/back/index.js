@@ -4,10 +4,11 @@ const meteoriteLandingsAPI = require("./api/meteorite-landings.js");
 const satellitesAPI = require("./api/active-satellites.js");
 
 function loadBackend(app) {
-    const BASE_URL_API = "/api/v1";
+    const BASE_URL_API_v1 = "/api/v1";
+    const BASE_URL_API_V2 = "/api/v2";
 
     // (Fuerza recibir solo JSON) ---
-    app.use(BASE_URL_API, (req, res, next) => {
+    app.use(BASE_URL_API_v1, (req, res, next) => {
         if (req.method === "POST" || req.method === "PUT") {
             // Comprueba si tiene cuerpo y si NO es JSON
             if (req.get("Content-Type") && !req.is("application/json")) {
@@ -19,9 +20,13 @@ function loadBackend(app) {
     });
 
     // --- Enchufamos las APIs ---
-    app.use(BASE_URL_API + "/space-launches", spaceLaunchesAPI);
-    app.use(BASE_URL_API + "/meteorite-landings", meteoriteLandingsAPI);
-    app.use(BASE_URL_API + "/active-satellites", satellitesAPI);
+    app.use(BASE_URL_API_v1 + "/space-launches", spaceLaunchesAPI);
+    app.use(BASE_URL_API_v1 + "/meteorite-landings", meteoriteLandingsAPI);
+    app.use(BASE_URL_API_v1 + "/active-satellites", satellitesAPI);
+
+    app.use(BASE_URL_API_V2 + "/space-launches", spaceLaunchesAPI);
+    app.use(BASE_URL_API_V2 + "/meteorite-landings", meteoriteLandingsAPI);
+    app.use(BASE_URL_API_V2 + "/active-satellites", satellitesAPI);
 }
 
 module.exports = { loadBackend };
