@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
+    "build": "cd src/front && npm install && npm run build",
     "start": "node index.js",
     "test-jpc-local": "npx newman run tests/api/JPC/api-tests-JPC.json -e tests/api/JPC/api-test-env-local.json",
     "test-jpc-render": "npx newman run tests/api/JPC/api-tests-JPC.json -e tests/api/JPC/api-test-env-render.json",
