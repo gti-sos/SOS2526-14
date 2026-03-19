@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
 const { loadBackend } = require("./src/back/index.js");
 
 const app = express();
@@ -10,13 +11,14 @@ app.use(express.json());
 // APIs primero
 loadBackend(app);
 
-// Sirve el build estático de SvelteKit
-app.use(express.static(path.join(__dirname, "src/front/build")));
-
-// Cualquier otra ruta la maneja SvelteKit
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "src/front/build/index.html"));
-});
+// Sirve el frontend solo si existe el build
+const buildPath = path.join(__dirname, "src/front/build");
+if (fs.existsSync(buildPath)) {
+    app.use(express.static(buildPath));
+    app.get("*", (req, res) => {
+        res.sendFile(path.join(buildPath, "index.html"));
+    });
+}
 
 app.listen(PORT, () => {
     console.log(`Servidor funcionando en http://localhost:${PORT}`);
