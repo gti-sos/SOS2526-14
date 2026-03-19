@@ -1,19 +1,23 @@
 const express = require("express");
 const path = require("path");
-const { loadBackend } = require("./src/back/index.js"); // Traemos el puente
+const { loadBackend } = require("./src/back/index.js");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-app.use(express.json()); // Para leer JSON (sustituye a body-parser)
-app.use("/", express.static("./public"));
+app.use(express.json());
 
-app.get("/", (req, res) => {
-    res.status(200).send("SOS2526-14 API is running correctly 🚀");
+// APIs primero
+loadBackend(app);
+
+// Sirve el build estático de SvelteKit
+app.use(express.static(path.join(__dirname, "src/front/build")));
+
+// Cualquier otra ruta la maneja SvelteKit
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "src/front/build/index.html"));
 });
 
-loadBackend(app); 
-
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor funcionando en http://localhost:${PORT}`);
+    console.log(`Servidor funcionando en http://localhost:${PORT}`);
 });
