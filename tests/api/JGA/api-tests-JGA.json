@@ -2,32 +2,58 @@
   "info": {
     "_postman_id": "c349ea48-30d9-456e-8e0a-dedc01306ff4",
     "name": "L06",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52241995",
+    "_collection_link": "https://go.postman.co/collection/52241995-c349ea48-30d9-456e-8e0a-dedc01306ff4?source=collection_link"
   },
   "item": [
     {
-      "name": "DELETE-200",
+      "name": "DELETE 200",
       "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200 or 204\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+              "pm.test(\"Respuesta contiene confirmación\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"message\");\r",
+              "    // Opcional: comprobar que el mensaje sea el correcto\r",
+              "    // pm.expect(jsonData.message).to.equal(\"Created\"); \r",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
       "request": {
         "method": "DELETE",
+        "header": [],
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites"]
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites"
+          ]
         }
-      }
+      },
+      "response": []
     },
     {
       "name": "GET datos",
@@ -36,22 +62,36 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200, 201 or 400\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400]);",
+              "pm.test(\"Respuesta contiene confirmación\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"message\");\r",
+              "    // Opcional: comprobar que el mensaje sea el correcto\r",
+              "    // pm.expect(jsonData.message).to.equal(\"Created\"); \r",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
       "request": {
         "method": "GET",
+        "header": [],
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/loadInitialData",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites", "loadInitialData"]
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites",
+            "loadInitialData"
+          ]
         }
-      }
+      },
+      "response": []
     },
     {
       "name": "GET-200",
@@ -60,26 +100,55 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
+              "pm.test(\"La respuesta es un array con datos\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    \r",
+              "    // Comprobamos que es un array\r",
+              "    pm.expect(jsonData).to.be.an(\"array\");\r",
+              "    \r",
+              "    // Comprobamos que al menos tiene un elemento\r",
+              "    pm.expect(jsonData.length).to.be.at.least(1);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"El primer elemento tiene los campos correctos\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    const firstItem = jsonData[0];\r",
+              "    \r",
+              "    pm.expect(firstItem).to.have.property(\"name\");\r",
+              "    pm.expect(firstItem).to.have.property(\"country\");\r",
+              "    pm.expect(firstItem).to.have.property(\"launch_date\");\r",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
       "request": {
         "method": "GET",
+        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"Ejemplo\",\"country\":\"Multinational\",\"launch_date\":\"2015-03-02\",\"launch_mass\":\"2000.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35803.0\",\"perigee_height\":\"35788.0\"}"
+          "raw": "{\"name\":\"Ejemplo\",\r\n\"country\":\"Multinational\",\r\n\"launch_date\":\"2015-03-02\",\r\n\"launch_mass\":\"2000.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35803.0\",\"perigee_height\":\"35788.0\"}\r\n"
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites", ""]
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites",
+            ""
+          ]
         }
-      }
+      },
+      "response": []
     },
     {
       "name": "Get recurso-200",
@@ -88,22 +157,51 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200 or 404\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+              "// 1. Comprobar el código de estado\r",
+              "pm.test(\"Estado de respuesta es 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// 2. Comprobar el contenido del objeto\r",
+              "pm.test(\"El recurso devuelto es el correcto\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    \r",
+              "    // Verificamos que los campos clave existen\r",
+              "    pm.expect(jsonData).to.have.property(\"name\");\r",
+              "    pm.expect(jsonData).to.have.property(\"country\");\r",
+              "    \r",
+              "    // Verificamos que los valores coinciden con lo solicitado\r",
+              "    pm.expect(jsonData.name).to.equal(\"COSMIC-B\");\r",
+              "    pm.expect(jsonData.country).to.equal(\"Taiwan\");\r",
+              "    \r",
+              "    // Comprobamos que un campo técnico tiene el formato esperado (string en tu caso)\r",
+              "    pm.expect(jsonData.launch_mass).to.be.a(\"string\");\r",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
       "request": {
         "method": "GET",
+        "header": [],
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/Taiwan/COSMIC-B",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites", "Taiwan", "COSMIC-B"]
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites",
+            "Taiwan",
+            "COSMIC-B"
+          ]
         }
-      }
+      },
+      "response": []
     },
     {
       "name": "GET recurso no existente 404",
@@ -112,22 +210,128 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 404\", function () {",
-              "    pm.response.to.have.status(404);",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{Render}}/api/v1/active-satellit",
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellit"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "DELETE-200",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Respuesta contiene confirmación\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"message\");\r",
+              "    // Opcional: comprobar que el mensaje sea el correcto\r",
+              "    // pm.expect(jsonData.message).to.equal(\"Created\"); \r",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{Render}}/api/v1/active-satellites",
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET datos",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Respuesta contiene confirmación\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"message\");\r",
+              "    // Opcional: comprobar que el mensaje sea el correcto\r",
+              "    // pm.expect(jsonData.message).to.equal(\"Created\"); \r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
       "request": {
         "method": "GET",
+        "header": [],
         "url": {
-          "raw": "{{Render}}/api/v1/active-satellit",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellit"]
+          "raw": "{{Render}}/api/v1/active-satellites/loadInitialData",
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites",
+            "loadInitialData"
+          ]
         }
-      }
+      },
+      "response": []
     },
     {
       "name": "Delete recurso-200",
@@ -136,22 +340,37 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200 or 404\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+              "pm.test(\"Respuesta contiene confirmación\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"message\");\r",
+              "    // Opcional: comprobar que el mensaje sea el correcto\r",
+              "    // pm.expect(jsonData.message).to.equal(\"Created\"); \r",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
       "request": {
         "method": "DELETE",
+        "header": [],
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/Taiwan/COSMIC-B",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites", "Taiwan", "COSMIC-B"]
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites",
+            "Taiwan",
+            "COSMIC-B"
+          ]
         }
-      }
+      },
+      "response": []
     },
     {
       "name": "Delete recurso NOT FOUND-404",
@@ -160,78 +379,151 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 404\", function () {",
-              "    pm.response.to.have.status(404);",
+              "pm.test(\"Respuesta contiene confirmación\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"message\");\r",
+              "    // Opcional: comprobar que el mensaje sea el correcto\r",
+              "    // pm.expect(jsonData.message).to.equal(\"Created\"); \r",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
       "request": {
         "method": "DELETE",
+        "header": [],
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/1HOPSAT-TD",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites", "1HOPSAT-TD"]
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites",
+            "1HOPSAT-TD"
+          ]
         }
-      }
+      },
+      "response": []
     },
     {
       "name": "POST recurso concreto-405",
       "event": [
         {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 405\", function () {",
-              "    pm.response.to.have.status(405);",
+              "pm.test(\"Respuesta contiene confirmación\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"message\");\r",
+              "    // Opcional: comprobar que el mensaje sea el correcto\r",
+              "    // pm.expect(jsonData.message).to.equal(\"Created\"); \r",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
       "request": {
         "method": "POST",
+        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"Ejemplo\",\"country\":\"Multinational\",\"launch_date\":\"2015-03-02\",\"launch_mass\":\"2000.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35803.0\",\"perigee_height\":\"35788.0\"}"
+          "raw": "{\"name\":\"Ejemplo\",\r\n\"country\":\"Multinational\",\r\n\"launch_date\":\"2015-03-02\",\r\n\"launch_mass\":\"2000.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35803.0\",\"perigee_height\":\"35788.0\"}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/Taiwan/COSMIC-B",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites", "Taiwan", "COSMIC-B"]
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites",
+            "Taiwan",
+            "COSMIC-B"
+          ]
         }
-      }
+      },
+      "response": []
     },
     {
       "name": "POST 201",
       "event": [
         {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 201 or 400\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([201, 400]);",
+              "pm.test(\"Respuesta contiene confirmación\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"message\");\r",
+              "   \r",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
       "request": {
         "method": "POST",
+        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"Ejemplo\",\"country\":\"Multinational\",\"launch_date\":\"2015-03-02\",\"launch_mass\":\"2000.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35803.0\",\"perigee_height\":\"35788.0\"}"
+          "raw": "{\"name\":\"Ejemplo\",\r\n\"country\":\"Multinational\",\r\n\"launch_date\":\"2015-03-02\",\r\n\"launch_mass\":\"2000.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35803.0\",\"perigee_height\":\"35788.0\"}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites"]
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites"
+          ]
         }
-      }
+      },
+      "response": []
     },
     {
       "name": "POST 409",
@@ -240,26 +532,44 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 409 or 400\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([409, 400]);",
+              "pm.test(\"Respuesta contiene confirmación\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"message\");\r",
+              "   \r",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
       "request": {
         "method": "POST",
+        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"Baoyun\",\"country\":\"China\",\"launch_date\":\"2014-02-06\",\"launch_mass\":\"6330.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35793.0\",\"perigee_height\":\"35778.0\"}"
+          "raw": "{\"name\":\"Baoyun\",\"country\":\"China\",\"launch_date\":\"2014-02-06\",\"launch_mass\":\"6330.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35793.0\",\"perigee_height\":\"35778.0\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites", ""]
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites",
+            ""
+          ]
         }
-      }
+      },
+      "response": []
     },
     {
       "name": "Put correcto-200",
@@ -268,26 +578,46 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200 or 400\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+              "pm.test(\"Respuesta contiene confirmación\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"message\");\r",
+              "    // Opcional: comprobar que el mensaje sea el correcto\r",
+              "    // pm.expect(jsonData.message).to.equal(\"Created\"); \r",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
       "request": {
         "method": "PUT",
+        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"GOES-13\",\"country\":\"USA\",\"launch_date\":\"2014-02-06\",\"launch_mass\":\"6330.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35793.0\",\"perigee_height\":\"35778.0\"}"
+          "raw": "{\"name\":\"GOES-13\",\"country\":\"USA\",\"launch_date\":\"2014-02-06\",\"launch_mass\":\"6330.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35793.0\",\"perigee_height\":\"35778.0\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/USA/GOES-13",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites", "USA", "GOES-13"]
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites",
+            "USA",
+            "GOES-13"
+          ]
         }
-      }
+      },
+      "response": []
     },
     {
       "name": "Put a toda la lista 405",
@@ -296,26 +626,43 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 405\", function () {",
-              "    pm.response.to.have.status(405);",
+              "pm.test(\"Respuesta contiene confirmación\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"message\");\r",
+              "   \r",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
       "request": {
         "method": "PUT",
+        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"ABS-2\",\"country\":\"España\",\"launch_date\":\"2014-02-06\",\"launch_mass\":\"6330.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35793.0\",\"perigee_height\":\"35778.0\"}"
+          "raw": "{\"name\":\"ABS-2\",\"country\":\"España\",\"launch_date\":\"2014-02-06\",\"launch_mass\":\"6330.0\",\"expected_lifetime\":\"15.0\",\"apogee_height\":\"35793.0\",\"perigee_height\":\"35778.0\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites"]
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites"
+          ]
         }
-      }
+      },
+      "response": []
     },
     {
       "name": "PUT 400",
@@ -324,26 +671,45 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 400\", function () {",
-              "    pm.response.to.have.status(400);",
+              "pm.test(\"Respuesta contiene confirmación\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"message\");\r",
+              "   \r",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
       "request": {
         "method": "PUT",
+        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"ADLER-2\",\"country\":\"Austria\",\"launch_date\":\"2023-04-15\",\"launch_mass\":\"11.5\",\"expected_lifetime\":\"\",\"apogee_height\":\"506.0\",\"perigee_height\":\"497.0\"}"
+          "raw": "{\"name\":\"ADLER-2\",\"country\":\"Austria\",\"launch_date\":\"2023-04-15\",\"launch_mass\":\"11.5\",\"expected_lifetime\":\"\",\"apogee_height\":\"506.0\",\"perigee_height\":\"497.0\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/Taiwan/COSMIC-B",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites", "Taiwan", "COSMIC-B"]
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites",
+            "Taiwan",
+            "COSMIC-B"
+          ]
         }
-      }
+      },
+      "response": []
     },
     {
       "name": "PUT campos incorrectos 400",
@@ -352,26 +718,88 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 400 or 404\", function () {",
-              "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);",
-              "});"
+              ""
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
       "request": {
         "method": "PUT",
+        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"ADLR-2\",\"country\":\"Aust\",\"launch_date\":\"2023-04-15\",\"launch_mass\":\"11.5\",\"expected_lifetime\":\"\",\"perigee_height\":\"497.0\"}"
+          "raw": "{\"name\":\"ADLR-2\",\"country\":\"Aust\",\"launch_date\":\"2023-04-15\",\"launch_mass\":\"11.5\",\"expected_lifetime\":\"\"\"perigee_height\":\"497.0\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{Render}}/api/v1/active-satellites/ABS-2",
-          "host": ["{{Render}}"],
-          "path": ["api", "v1", "active-satellites", "ABS-2"]
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites",
+            "ABS-2"
+          ]
         }
-      }
+      },
+      "response": []
+    },
+    {
+      "name": "DELETE 200",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Respuesta contiene confirmación\", function () {\r",
+              "    const jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"message\");\r",
+              "    // Opcional: comprobar que el mensaje sea el correcto\r",
+              "    // pm.expect(jsonData.message).to.equal(\"Created\"); \r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{Render}}/api/v1/active-satellites",
+          "host": [
+            "{{Render}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "active-satellites"
+          ]
+        }
+      },
+      "response": []
     }
   ]
 }
