@@ -1,12 +1,12 @@
 <script>
     import { onMount } from 'svelte';
-    import { page } from '$app/stores';
+    import { page } from '$app/state';
     import { goto } from '$app/navigation';
 
     const API_URL = '/api/v2/meteorite-landings';
 
-    let countryParam = $page.params.country;
-    let nameParam = $page.params.name;
+    let countryParam = page.params.country;
+    let nameParam = page.params.name;
 
     // MAGIA DE SVELTE 5
     let meteorite = $state({ name: '', id: '', mass: '', year: '', geolocation: '', country: '' });
