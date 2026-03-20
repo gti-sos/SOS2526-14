@@ -17,11 +17,14 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies
+      - name: Install backend dependencies
         run: npm install
 
-      - name: Build frontend
-        run: npm run build
+      - name: Install frontend dependencies and build
+        run: |
+          cd src/front
+          npm install
+          npm run build
 
       - name: Run tests
         run: npm test
