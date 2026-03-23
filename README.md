@@ -9,7 +9,7 @@
 - **Repository**: [gti-sos/SOS2526-14](https://github.com/gti-sos/SOS2526-14)
 
 - **Proyecto está desplegado en Render y accesible en esta URL:**
-[https://sos2526-14.onrender.com/](https://sos2526-14.onrender.com/)
+[https://sos2526-14-yjus.onrender.com/](https://sos2526-14-yjus.onrender.com/)
 
 - **APIs**:
   - http://sos2526-14.onrender.com/api/v1/active-satellites/docs (developed by Jaime García Algarra)

@@ -1,271 +1,204 @@
 <script>
-	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
+    import { page } from '$app/state';
+    import { goto } from '$app/navigation';
 
-	const API = '/api/v1/space-launches';
+    const API = '/api/v1/space-launches';
 
-	let country = $derived(decodeURIComponent($page.params.country));
-	let id = $derived(Number($page.params.id));
+    let countryParam = page.params.country;
+    let idParam = page.params.id;
 
-	let cargando = $state(true);
-	let guardando = $state(false);
-	let noEncontrado = $state(false);
+    let mision = $state({ mission_id: '', company_name: '', location: '', year: '', rocket_name: '', mission_status: '', country: '' });
+    let mensajeExito = $state('');
+    let mensajeError = $state('');
 
-	let form = $state({
-		mission_id: 0,
-		company_name: '',
-		location: '',
-		year: 0,
-		rocket_name: '',
-		mission_status: '',
-		country: ''
-	});
+    getMision();
 
-	let toasts = $state([]);
+    async function getMision() {
+        const res = await fetch(`${API}/${countryParam}/${idParam}`);
+        if (res.status === 200) {
+            mision = await res.json();
+        } else if (res.status === 404) {
+            mensajeError = `No se ha encontrado ninguna misión con ID '${idParam}' en '${countryParam}'.`;
+        } else {
+            mensajeError = "Error al conectar con la base de datos.";
+        }
+    }
 
-	function toast(msg, tipo = 'ok') {
-		const tid = Date.now();
-		toasts = [...toasts, { id: tid, msg, tipo }];
-		setTimeout(() => {
-			toasts = toasts.filter((t) => t.id !== tid);
-		}, 4000);
-	}
+    async function guardarCambios() {
+        mensajeExito = ''; mensajeError = '';
 
-	async function cargarMision() {
-		cargando = true;
-		try {
-			const res = await fetch(`${API}/${encodeURIComponent(country)}/${id}`);
-			if (res.status === 404) {
-				noEncontrado = true;
-				return;
-			}
-			if (!res.ok) throw new Error();
-			const data = await res.json();
-			form = { ...data };
-		} catch {
-			toast('No se pudo cargar la misión. Comprueba tu conexión.', 'err');
-		} finally {
-			cargando = false;
-		}
-	}
+        const res = await fetch(`${API}/${countryParam}/${idParam}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...mision,
+                mission_id: Number(mision.mission_id),
+                year: Number(mision.year)
+            })
+        });
 
-	async function guardarCambios() {
-		const datos = {
-			mission_id: Number(form.mission_id),
-			company_name: form.company_name.trim(),
-			location: form.location.trim(),
-			year: Number(form.year),
-			rocket_name: form.rocket_name.trim(),
-			mission_status: form.mission_status,
-			country: form.country.trim()
-		};
-
-		const vacios = Object.entries(datos).filter(([_, v]) => v === '' || (typeof v === 'number' && v === 0));
-		if (vacios.length > 0) {
-			toast('Por favor, rellena todos los campos obligatorios.', 'err');
-			return;
-		}
-
-		guardando = true;
-		try {
-			const res = await fetch(`${API}/${encodeURIComponent(country)}/${id}`, {
-				method: 'PUT',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(datos)
-			});
-
-			if (res.ok) {
-				toast('✅ Misión actualizada correctamente.', 'ok');
-				setTimeout(() => goto('/space-launches'), 1500);
-			} else if (res.status === 404) {
-				toast(`No se encontró la misión con ID ${id} en "${country}".`, 'err');
-			} else if (res.status === 400) {
-				const err = await res.json();
-				toast(`Datos incorrectos: ${err.error}`, 'err');
-			} else {
-				toast('No se pudo guardar los cambios. Inténtalo de nuevo.', 'err');
-			}
-		} catch {
-			toast('Error de conexión con el servidor.', 'err');
-		} finally {
-			guardando = false;
-		}
-	}
-
-	cargarMision();
+        if (res.status === 200) {
+            mensajeExito = "¡Los cambios se han guardado correctamente!";
+            setTimeout(() => goto('/space-launches'), 1500);
+        } else if (res.status === 400) {
+            mensajeError = "No se ha podido guardar. Comprueba que no falten datos obligatorios.";
+        } else if (res.status === 404) {
+            mensajeError = "La misión que intentas editar ya no existe.";
+        } else {
+            mensajeError = "Ha ocurrido un error inesperado.";
+        }
+    }
 </script>
 
-<div class="toast-container">
-	{#each toasts as t (t.id)}
-		<div class="toast {t.tipo}">{t.msg}</div>
-	{/each}
-</div>
+<main>
+    <h2>✏️ Editar Misión</h2>
 
-<div class="page">
-	<header>
-		<div class="header-icon">✏️</div>
-		<h1>EDITAR MISIÓN</h1>
-		<p class="subtitle">Modificar datos · SOS2526-14</p>
-		<a href="/space-launches" class="back-link">← Volver al listado</a>
-	</header>
+    {#if mensajeExito} <div class="alerta exito">{mensajeExito}</div> {/if}
+    {#if mensajeError} <div class="alerta error">{mensajeError}</div> {/if}
 
-	{#if cargando}
-		<div class="panel">
-			<div class="empty">Cargando datos de la misión...</div>
-		</div>
-	{:else if noEncontrado}
-		<div class="panel">
-			<div class="empty">
-				<span>🔍</span>
-				No existe ninguna misión con ID <strong>{id}</strong> en el país <strong>{country}</strong>.
-				<br /><br />
-				<a href="/space-launches" class="back-link">← Volver al listado</a>
-			</div>
-		</div>
-	{:else}
-		<section class="panel">
-			<h2 class="panel-title">📋 Datos de la misión #{id} · {country}</h2>
-			<div class="form-grid">
-				<div class="form-group">
-					<label for="f-id">ID de misión</label>
-					<input id="f-id" type="number" bind:value={form.mission_id} disabled />
-					<span class="hint">El ID no se puede modificar</span>
-				</div>
-				<div class="form-group">
-					<label for="f-company">Empresa *</label>
-					<input id="f-company" type="text" placeholder="Ej: SpaceX" bind:value={form.company_name} />
-				</div>
-				<div class="form-group">
-					<label for="f-location">Ubicación *</label>
-					<input id="f-location" type="text" placeholder="Ej: Cape Canaveral" bind:value={form.location} />
-				</div>
-				<div class="form-group">
-					<label for="f-year">Año *</label>
-					<input id="f-year" type="number" placeholder="Ej: 2024" bind:value={form.year} />
-				</div>
-				<div class="form-group">
-					<label for="f-rocket">Cohete *</label>
-					<input id="f-rocket" type="text" placeholder="Ej: Falcon 9" bind:value={form.rocket_name} />
-				</div>
-				<div class="form-group">
-					<label for="f-status">Estado de la misión *</label>
-					<select id="f-status" bind:value={form.mission_status}>
-						<option value="">— Seleccionar —</option>
-						<option value="Success">Éxito</option>
-						<option value="Failure">Fallo</option>
-						<option value="Partial Failure">Fallo Parcial</option>
-						<option value="Prelaunch Failure">Fallo Prelanzamiento</option>
-					</select>
-				</div>
-				<div class="form-group">
-					<label for="f-country">País *</label>
-					<input id="f-country" type="text" placeholder="Ej: USA" bind:value={form.country} />
-				</div>
-			</div>
-			<div class="btn-row">
-				<button class="btn-primary" onclick={guardarCambios} disabled={guardando}>
-					{guardando ? '⏳ Guardando...' : '💾 Guardar cambios'}
-				</button>
-				<a href="/space-launches" class="btn-secondary">✕ Cancelar</a>
-			</div>
-		</section>
-	{/if}
-</div>
+    <section class="formulario">
+        <div class="campo-grupo">
+            <label for="mission_id">ID de misión (No editable):</label>
+            <input id="mission_id" type="number" bind:value={mision.mission_id} disabled>
+        </div>
+        <div class="campo-grupo">
+            <label for="company_name">Empresa:</label>
+            <input id="company_name" type="text" bind:value={mision.company_name}>
+        </div>
+        <div class="campo-grupo">
+            <label for="location">Ubicación:</label>
+            <input id="location" type="text" bind:value={mision.location}>
+        </div>
+        <div class="campo-grupo">
+            <label for="year">Año:</label>
+            <input id="year" type="number" bind:value={mision.year}>
+        </div>
+        <div class="campo-grupo">
+            <label for="rocket_name">Cohete:</label>
+            <input id="rocket_name" type="text" bind:value={mision.rocket_name}>
+        </div>
+        <div class="campo-grupo">
+            <label for="mission_status">Estado de la misión:</label>
+            <select id="mission_status" bind:value={mision.mission_status}>
+                <option value="">-- Seleccionar --</option>
+                <option value="Success">Éxito</option>
+                <option value="Failure">Fallo</option>
+                <option value="Partial Failure">Fallo Parcial</option>
+                <option value="Prelaunch Failure">Fallo Prelanzamiento</option>
+            </select>
+        </div>
+        <div class="campo-grupo">
+            <label for="country">País (No editable):</label>
+            <input id="country" type="text" bind:value={mision.country} disabled>
+        </div>
+        <div class="botones">
+            <button onclick={guardarCambios} class="btn-guardar">Guardar cambios</button>
+            <button onclick={() => goto('/space-launches')} class="btn-volver">Cancelar y volver</button>
+        </div>
+    </section>
+</main>
 
 <style>
-	:global(body) {
-		margin: 0;
-		background: #04060f;
-		color: #e8f4ff;
-		font-family: 'DM Mono', 'Courier New', monospace;
-	}
+    :global(body) {
+        background-color: #f8fafc;
+        color: #334155;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
 
-	.toast-container {
-		position: fixed;
-		top: 1.5rem;
-		right: 1.5rem;
-		z-index: 9999;
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
+    main {
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
 
-	.toast {
-		padding: 0.8rem 1.2rem;
-		border-radius: 6px;
-		font-size: 0.82rem;
-		max-width: 340px;
-		border-left: 3px solid;
-		animation: slideIn 0.3s ease;
-	}
-	.toast.ok  { background: #001a10; border-color: #00ff9d; color: #00ff9d; }
-	.toast.err { background: #1a0000; border-color: #ff4444; color: #ff4444; }
+    h2 {
+        color: #1e293b;
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin-bottom: 30px;
+        border-bottom: 3px solid #ffc107;
+        display: inline-block;
+        padding-bottom: 5px;
+    }
 
-	@keyframes slideIn {
-		from { opacity: 0; transform: translateX(30px); }
-		to   { opacity: 1; transform: translateX(0); }
-	}
+    .alerta {
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        font-weight: 600;
+        border: 1px solid;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .exito { background-color: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+    .error { background-color: #fee2e2; color: #991b1b; border-color: #fecaca; }
 
-	.page { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .formulario {
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
 
-	header { text-align: center; margin-bottom: 2.5rem; }
-	.header-icon { font-size: 2.5rem; }
+    .campo-grupo {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
 
-	h1 {
-		font-size: clamp(1.4rem, 4vw, 2rem);
-		font-weight: 900;
-		background: linear-gradient(135deg, #ff6b35, #ffaa00);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		margin: 0.3rem 0;
-	}
+    label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #475569;
+    }
 
-	.subtitle { color: #5a7a9f; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.15em; }
+    input, select {
+        padding: 12px 14px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background-color: #ffffff;
+        font-size: 15px;
+        transition: border-color 0.2s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    input:focus:not(:disabled), select:focus {
+        outline: none;
+        border-color: #28a745;
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+    }
+    input:disabled {
+        background-color: #f1f5f9;
+        color: #94a3b8;
+        cursor: not-allowed;
+    }
 
-	.back-link { display: inline-block; margin-top: 0.6rem; color: #5a7a9f; font-size: 0.78rem; text-decoration: none; }
-	.back-link:hover { color: #00d4ff; }
+    .botones {
+        margin-top: 15px;
+        display: flex;
+        gap: 12px;
+        padding-top: 15px;
+        border-top: 1px solid #e2e8f0;
+    }
 
-	.panel { background: #0c1428; border: 1px solid #1a2a50; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    button {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    button:hover { opacity: 0.9; transform: translateY(-1px); }
 
-	.panel-title {
-		font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
-		color: #ff6b35; margin: 0 0 1.2rem;
-		display: flex; align-items: center; gap: 0.6rem;
-	}
-	.panel-title::after { content: ''; flex: 1; height: 1px; background: #1a2a50; }
-
-	.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.8rem; }
-	.form-group { display: flex; flex-direction: column; gap: 0.3rem; }
-
-	label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: #5a7a9f; }
-	.hint { font-size: 0.65rem; color: #3a5a7f; font-style: italic; }
-
-	input, select {
-		background: #080d1e; border: 1px solid #1a2a50; border-radius: 5px;
-		color: #e8f4ff; font-family: inherit; font-size: 0.85rem;
-		padding: 0.55rem 0.75rem; transition: border-color 0.2s; outline: none;
-	}
-	input:focus, select:focus { border-color: #ff6b35; }
-	input:disabled { opacity: 0.5; cursor: not-allowed; }
-	input::placeholder { color: #5a7a9f; }
-	select option { background: #080d1e; }
-
-	.btn-row { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 1.5rem; }
-
-	button, a.btn-secondary {
-		font-size: 0.78rem; letter-spacing: 0.05em; padding: 0.6rem 1.2rem;
-		border-radius: 5px; border: none; cursor: pointer; transition: all 0.2s;
-		text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;
-	}
-
-	.btn-primary { background: #ff6b35; color: #fff; font-weight: 700; }
-	.btn-primary:hover:not(:disabled) { background: #e55a28; }
-	.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
-	a.btn-secondary { background: transparent; border: 1px solid #5a7a9f; color: #5a7a9f; }
-	a.btn-secondary:hover { border-color: #e8f4ff; color: #e8f4ff; }
-
-	.empty { text-align: center; padding: 3rem; color: #5a7a9f; font-size: 0.85rem; }
-	.empty span { display: block; font-size: 2.5rem; margin-bottom: 0.8rem; }
+    .btn-guardar { background-color: #28a745; color: white; }
+    .btn-volver { background-color: #64748b; color: white; }
 </style>

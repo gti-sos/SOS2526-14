@@ -1,396 +1,366 @@
 <script>
-	const API = '/api/v1/space-launches';
+    import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
 
-	let misiones = $state([]);
-	let cargando = $state(true);
-	let busqueda = $state('');
+    const API = '/api/v1/space-launches';
 
-	let form = $state({
-		mission_id: '',
-		company_name: '',
-		location: '',
-		year: '',
-		rocket_name: '',
-		mission_status: '',
-		country: ''
-	});
+    let misiones = $state([]);
+    let nuevaMision = $state({ mission_id: '', company_name: '', location: '', year: '', rocket_name: '', mission_status: '', country: '' });
 
-	let toasts = $state([]);
+    let mensajeExito = $state('');
+    let mensajeError = $state('');
 
-	function toast(msg, tipo = 'ok') {
-		const id = Date.now();
-		toasts = [...toasts, { id, msg, tipo }];
-		setTimeout(() => {
-			toasts = toasts.filter((t) => t.id !== id);
-		}, 4000);
-	}
+    let limit = 10;
+    let offset = $state(0);
+    let busquedaPais = $state('');
+    let busquedaEmpresa = $state('');
 
-	async function cargarMisiones() {
-		cargando = true;
-		try {
-			const res = await fetch(API);
-			if (!res.ok) throw new Error();
-			misiones = await res.json();
-		} catch {
-			toast('No se pudo conectar con el servidor. Comprueba que está activo.', 'err');
-			misiones = [];
-		} finally {
-			cargando = false;
-		}
-	}
+    onMount(getMisiones);
 
-	async function crearMision() {
-		const datos = {
-			mission_id: Number(form.mission_id),
-			company_name: form.company_name.trim(),
-			location: form.location.trim(),
-			year: Number(form.year),
-			rocket_name: form.rocket_name.trim(),
-			mission_status: form.mission_status,
-			country: form.country.trim()
-		};
+    async function getMisiones() {
+        limpiarMensajes();
+        try {
+            let url = `${API}?limit=${limit}&offset=${offset}`;
+            if (busquedaPais) url += `&country=${busquedaPais}`;
+            if (busquedaEmpresa) url += `&company_name=${busquedaEmpresa}`;
 
-		const vacios = Object.entries(datos).filter(([_, v]) => v === '' || v === 0);
-		if (vacios.length > 0) {
-			toast('Por favor, rellena todos los campos obligatorios.', 'err');
-			return;
-		}
+            const res = await fetch(url);
+            if (res.ok) {
+                misiones = await res.json();
+                if (misiones.length === 0 && (busquedaPais || busquedaEmpresa)) {
+                    mostrarError("No se encontraron misiones con esos filtros.");
+                }
+            } else {
+                mostrarError("No se han podido cargar los datos.");
+            }
+        } catch (error) {
+            mostrarError("Error de conexión con el servidor.");
+        }
+    }
 
-		try {
-			const res = await fetch(API, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(datos)
-			});
+    function buscar() {
+        offset = 0;
+        getMisiones();
+    }
 
-			if (res.status === 201) {
-				toast(`✅ Misión ${datos.mission_id} registrada correctamente.`, 'ok');
-				limpiarFormulario();
-				cargarMisiones();
-			} else if (res.status === 409) {
-				toast(`Ya existe una misión con el ID ${datos.mission_id}.`, 'err');
-			} else if (res.status === 400) {
-				const err = await res.json();
-				toast(`Datos incorrectos: ${err.faltantes?.join(', ') || err.error}`, 'err');
-			} else {
-				toast('No se pudo registrar la misión. Inténtalo de nuevo.', 'err');
-			}
-		} catch {
-			toast('Error de conexión con el servidor.', 'err');
-		}
-	}
+    function recargarLista() {
+        busquedaPais = '';
+        busquedaEmpresa = '';
+        offset = 0;
+        getMisiones();
+    }
 
-	async function borrarMision(country, id, nombre) {
-		if (!confirm(`¿Seguro que quieres eliminar la misión "${nombre}" (ID: ${id})?`)) return;
-		try {
-			const res = await fetch(`${API}/${encodeURIComponent(country)}/${id}`, { method: 'DELETE' });
-			if (res.ok) {
-				toast(`Misión ${id} eliminada correctamente.`, 'ok');
-				cargarMisiones();
-			} else if (res.status === 404) {
-				toast(`No se encontró la misión con ID ${id}.`, 'err');
-			} else {
-				toast('No se pudo eliminar la misión.', 'err');
-			}
-		} catch {
-			toast('Error de conexión con el servidor.', 'err');
-		}
-	}
+    function paginaSiguiente() {
+        offset += limit;
+        getMisiones();
+    }
 
-	async function borrarTodo() {
-		if (!confirm('⚠️ ¿Seguro que quieres eliminar TODAS las misiones? Esta acción no se puede deshacer.')) return;
-		try {
-			const res = await fetch(API, { method: 'DELETE' });
-			if (res.ok) {
-				const data = await res.json();
-				toast(`Se han eliminado ${data.removed} misiones correctamente.`, 'ok');
-				cargarMisiones();
-			} else {
-				toast('No se pudo eliminar la colección.', 'err');
-			}
-		} catch {
-			toast('Error de conexión con el servidor.', 'err');
-		}
-	}
+    function paginaAnterior() {
+        if (offset >= limit) {
+            offset -= limit;
+            getMisiones();
+        }
+    }
 
-	function limpiarFormulario() {
-		form = { mission_id: '', company_name: '', location: '', year: '', rocket_name: '', mission_status: '', country: '' };
-	}
+    async function cargarDatosIniciales() {
+        limpiarMensajes();
+        const res = await fetch(`${API}/loadInitialData`);
+        if (res.ok) {
+            const data = await res.json();
+            mostrarExito(`Se han cargado ${data.count} misiones correctamente.`);
+            recargarLista();
+        } else if (res.status === 400) {
+            mostrarError("La base de datos ya tiene datos cargados.");
+        } else {
+            mostrarError("No se pudieron cargar los datos iniciales.");
+        }
+    }
 
-	let misionesFiltradas = $derived(
-		misiones.filter((m) => {
-			const q = busqueda.toLowerCase();
-			return (
-				m.company_name?.toLowerCase().includes(q) ||
-				m.country?.toLowerCase().includes(q) ||
-				m.rocket_name?.toLowerCase().includes(q) ||
-				m.location?.toLowerCase().includes(q) ||
-				String(m.year).includes(q)
-			);
-		})
-	);
+    async function crearMision() {
+        limpiarMensajes();
+        const res = await fetch(API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...nuevaMision,
+                mission_id: Number(nuevaMision.mission_id),
+                year: Number(nuevaMision.year)
+            })
+        });
 
-	function statusClass(s) {
-		if (!s) return '';
-		const sl = s.toLowerCase();
-		if (sl === 'success') return 'badge-success';
-		if (sl === 'failure') return 'badge-failure';
-		if (sl.includes('partial')) return 'badge-partial';
-		if (sl.includes('prelaunch')) return 'badge-prelaunch';
-		return '';
-	}
+        if (res.status === 201) {
+            mostrarExito(`¡La misión ${nuevaMision.mission_id} se ha añadido correctamente!`);
+            nuevaMision = { mission_id: '', company_name: '', location: '', year: '', rocket_name: '', mission_status: '', country: '' };
+            recargarLista();
+        } else if (res.status === 409) {
+            mostrarError(`Ya existe una misión con el ID '${nuevaMision.mission_id}'.`);
+        } else if (res.status === 400) {
+            mostrarError("Revisa los datos. Faltan campos obligatorios.");
+        } else {
+            mostrarError("Ha ocurrido un error inesperado al intentar guardar.");
+        }
+    }
 
-	function statusLabel(s) {
-		const map = {
-			success: 'Éxito',
-			failure: 'Fallo',
-			'partial failure': 'Fallo Parcial',
-			'prelaunch failure': 'Fallo Prelanzamiento'
-		};
-		return map[s?.toLowerCase()] ?? s ?? '—';
-	}
+    async function borrarMision(country, id) {
+        limpiarMensajes();
+        if (!confirm(`¿Estás seguro de que quieres eliminar la misión ${id}?`)) return;
 
-	cargarMisiones();
+        const res = await fetch(`${API}/${encodeURIComponent(country)}/${id}`, { method: 'DELETE' });
+
+        if (res.status === 200) {
+            mostrarExito(`La misión ${id} ha sido eliminada.`);
+            getMisiones();
+        } else if (res.status === 404) {
+            mostrarError(`No existe la misión con ID '${id}' en '${country}'.`);
+        } else {
+            mostrarError("No se ha podido eliminar.");
+        }
+    }
+
+    async function borrarTodos() {
+        limpiarMensajes();
+        if (!confirm("¡ATENCIÓN! ¿Seguro que quieres borrar TODAS las misiones?")) return;
+
+        const res = await fetch(API, { method: 'DELETE' });
+
+        if (res.status === 200) {
+            mostrarExito("Se han eliminado todas las misiones.");
+            recargarLista();
+        } else {
+            mostrarError("Error al vaciar la base de datos.");
+        }
+    }
+
+    function mostrarExito(msg) { mensajeExito = msg; }
+    function mostrarError(msg) { mensajeError = msg; }
+    function limpiarMensajes() { mensajeExito = ''; mensajeError = ''; }
 </script>
 
-<div class="toast-container">
-	{#each toasts as t (t.id)}
-		<div class="toast {t.tipo}">{t.msg}</div>
-	{/each}
-</div>
+<main>
+    <h2>Gestión de Lanzamientos Espaciales</h2>
 
-<div class="page">
-	<header>
-		<div class="header-icon">🚀</div>
-		<h1>LANZAMIENTOS ESPACIALES</h1>
-		<p class="subtitle">Sistema de Gestión de Misiones · SOS2526-14</p>
-		<a href="/" class="back-link">← Volver al inicio</a>
-	</header>
+    {#if mensajeExito} <div class="alerta exito">{mensajeExito}</div> {/if}
+    {#if mensajeError} <div class="alerta error">{mensajeError}</div> {/if}
 
-	<section class="panel">
-		<h2 class="panel-title">✦ Registrar nueva misión</h2>
-		<div class="form-grid">
-			<div class="form-group">
-				<label for="f-id">ID de misión *</label>
-				<input id="f-id" type="number" placeholder="Ej: 1001" bind:value={form.mission_id} />
-			</div>
-			<div class="form-group">
-				<label for="f-company">Empresa *</label>
-				<input id="f-company" type="text" placeholder="Ej: SpaceX" bind:value={form.company_name} />
-			</div>
-			<div class="form-group">
-				<label for="f-location">Ubicación *</label>
-				<input id="f-location" type="text" placeholder="Ej: Cape Canaveral" bind:value={form.location} />
-			</div>
-			<div class="form-group">
-				<label for="f-year">Año *</label>
-				<input id="f-year" type="number" placeholder="Ej: 2024" bind:value={form.year} />
-			</div>
-			<div class="form-group">
-				<label for="f-rocket">Cohete *</label>
-				<input id="f-rocket" type="text" placeholder="Ej: Falcon 9" bind:value={form.rocket_name} />
-			</div>
-			<div class="form-group">
-				<label for="f-status">Estado de la misión *</label>
-				<select id="f-status" bind:value={form.mission_status}>
-					<option value="">— Seleccionar —</option>
-					<option value="Success">Éxito</option>
-					<option value="Failure">Fallo</option>
-					<option value="Partial Failure">Fallo Parcial</option>
-					<option value="Prelaunch Failure">Fallo Prelanzamiento</option>
-				</select>
-			</div>
-			<div class="form-group">
-				<label for="f-country">País *</label>
-				<input id="f-country" type="text" placeholder="Ej: USA" bind:value={form.country} />
-			</div>
-		</div>
-		<div class="btn-row">
-			<button class="btn-primary" onclick={crearMision}>＋ Registrar misión</button>
-			<button class="btn-secondary" onclick={limpiarFormulario}>↺ Limpiar</button>
-		</div>
-	</section>
+    <section class="busqueda-box">
+        <h3>🔍 Buscar Misiones</h3>
+        <input type="text" placeholder="Buscar por País (ej. USA)" bind:value={busquedaPais}>
+        <input type="text" placeholder="Buscar por Empresa" bind:value={busquedaEmpresa}>
+        <button onclick={buscar} class="btn-buscar">Buscar</button>
+        <button onclick={recargarLista} class="btn-recargar">Limpiar y Recargar Lista</button>
+    </section>
 
-	<section class="panel">
-		<h2 class="panel-title">📡 Misiones registradas</h2>
-		<div class="toolbar">
-			<input class="search-box" type="text" placeholder="Filtrar por empresa, país, cohete..." bind:value={busqueda} />
-			<button class="btn-secondary" onclick={cargarMisiones}>↻ Actualizar</button>
-			<button class="btn-danger" onclick={borrarTodo}>🗑 Borrar todo</button>
-			<span class="count-badge">Total: <strong>{misionesFiltradas.length}</strong></span>
-		</div>
+    <section class="formulario">
+        <h3>➕ Añadir Nueva Misión</h3>
+        <input type="number" placeholder="ID de misión" bind:value={nuevaMision.mission_id}>
+        <input type="text" placeholder="Empresa" bind:value={nuevaMision.company_name}>
+        <input type="text" placeholder="Ubicación" bind:value={nuevaMision.location}>
+        <input type="number" placeholder="Año" bind:value={nuevaMision.year}>
+        <input type="text" placeholder="Cohete" bind:value={nuevaMision.rocket_name}>
+        <select bind:value={nuevaMision.mission_status}>
+            <option value="">-- Estado de la misión --</option>
+            <option value="Success">Éxito</option>
+            <option value="Failure">Fallo</option>
+            <option value="Partial Failure">Fallo Parcial</option>
+            <option value="Prelaunch Failure">Fallo Prelanzamiento</option>
+        </select>
+        <input type="text" placeholder="País" bind:value={nuevaMision.country}>
+        <button onclick={crearMision} class="btn-guardar">Añadir a la base de datos</button>
+    </section>
 
-		{#if cargando}
-			<div class="empty">Cargando misiones...</div>
-		{:else if misionesFiltradas.length === 0}
-			<div class="empty">
-				<span>🛸</span>
-				No se encontraron misiones
-			</div>
-		{:else}
-			<div class="table-wrap">
-				<table>
-					<thead>
-						<tr>
-							<th>ID</th>
-							<th>Empresa</th>
-							<th>Cohete</th>
-							<th>Ubicación</th>
-							<th>Año</th>
-							<th>País</th>
-							<th>Estado</th>
-							<th>Acciones</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each misionesFiltradas as m (m.mission_id + m.country)}
-							<tr>
-								<td>{m.mission_id}</td>
-								<td>{m.company_name}</td>
-								<td>{m.rocket_name}</td>
-								<td>{m.location}</td>
-								<td>{m.year}</td>
-								<td>{m.country}</td>
-								<td><span class="badge {statusClass(m.mission_status)}">{statusLabel(m.mission_status)}</span></td>
-								<td>
-									<div class="action-btns">
-										<a class="btn-icon" href="/space-launches/edit/{encodeURIComponent(m.country)}/{m.mission_id}">✏️ Editar</a>
-										<button class="btn-icon del" onclick={() => borrarMision(m.country, m.mission_id, m.company_name)}>🗑 Eliminar</button>
-									</div>
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-		{/if}
-	</section>
-</div>
+    <div class="acciones-globales">
+        <button onclick={cargarDatosIniciales} class="btn-cargar">Cargar datos iniciales</button>
+        <button onclick={borrarTodos} class="btn-peligro">Borrar TODO</button>
+    </div>
+
+    <div class="paginacion">
+        <button onclick={paginaAnterior} disabled={offset === 0} class="btn-paginacion">⬅ Página Anterior</button>
+        <span>Mostrando desde el {offset + 1} al {offset + limit}</span>
+        <button onclick={paginaSiguiente} disabled={misiones.length < limit} class="btn-paginacion">Página Siguiente ➡</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th><th>Empresa</th><th>Cohete</th><th>Ubicación</th><th>Año</th><th>País</th><th>Estado</th><th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {#each misiones as m}
+                <tr>
+                    <td>{m.mission_id}</td>
+                    <td>{m.company_name}</td>
+                    <td>{m.rocket_name}</td>
+                    <td>{m.location}</td>
+                    <td>{m.year}</td>
+                    <td>{m.country}</td>
+                    <td>{m.mission_status}</td>
+                    <td>
+                        <button onclick={() => goto(`/space-launches/edit/${encodeURIComponent(m.country)}/${m.mission_id}`)} class="btn-editar">Editar</button>
+                        <button onclick={() => borrarMision(m.country, m.mission_id)} class="btn-borrar">Eliminar</button>
+                    </td>
+                </tr>
+            {/each}
+        </tbody>
+    </table>
+</main>
 
 <style>
-	:global(body) {
-		margin: 0;
-		background: #04060f;
-		color: #e8f4ff;
-		font-family: 'DM Mono', 'Courier New', monospace;
-	}
+    :global(body) {
+        background-color: #f8fafc;
+        color: #334155;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
 
-	.toast-container {
-		position: fixed;
-		top: 1.5rem;
-		right: 1.5rem;
-		z-index: 9999;
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
+    main {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
 
-	.toast {
-		padding: 0.8rem 1.2rem;
-		border-radius: 6px;
-		font-size: 0.82rem;
-		max-width: 340px;
-		border-left: 3px solid;
-		animation: slideIn 0.3s ease;
-	}
-	.toast.ok  { background: #001a10; border-color: #00ff9d; color: #00ff9d; }
-	.toast.err { background: #1a0000; border-color: #ff4444; color: #ff4444; }
+    h2 {
+        color: #1e293b;
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin-bottom: 30px;
+        border-bottom: 3px solid #007bff;
+        display: inline-block;
+        padding-bottom: 5px;
+    }
 
-	@keyframes slideIn {
-		from { opacity: 0; transform: translateX(30px); }
-		to   { opacity: 1; transform: translateX(0); }
-	}
+    h3 {
+        font-size: 1.25rem;
+        color: #475569;
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
 
-	.page { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .alerta {
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        font-weight: 600;
+        border: 1px solid;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .exito { background-color: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+    .error { background-color: #fee2e2; color: #991b1b; border-color: #fecaca; }
 
-	header { text-align: center; margin-bottom: 2.5rem; }
-	.header-icon { font-size: 3rem; }
+    section {
+        background: #ffffff;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e2e8f0;
+    }
 
-	h1 {
-		font-size: clamp(1.4rem, 4vw, 2.4rem);
-		font-weight: 900;
-		background: linear-gradient(135deg, #00d4ff, #00ff9d);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		margin: 0.3rem 0;
-	}
+    .busqueda-box {
+        background: #e0f2fe;
+        border-color: #bae6fd;
+    }
 
-	.subtitle { color: #5a7a9f; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.15em; }
+    input, select {
+        padding: 10px 14px;
+        margin: 6px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background-color: #ffffff;
+        font-size: 14px;
+        transition: border-color 0.2s;
+    }
+    input:focus, select:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
 
-	.back-link { display: inline-block; margin-top: 0.6rem; color: #5a7a9f; font-size: 0.78rem; text-decoration: none; }
-	.back-link:hover { color: #00d4ff; }
+    .acciones-globales {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        justify-content: flex-end;
+    }
 
-	.panel { background: #0c1428; border: 1px solid #1a2a50; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+        font-size: 14px;
+    }
+    th, td {
+        padding: 16px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    th {
+        background-color: #f1f5f9;
+        color: #64748b;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:nth-child(even) { background-color: #f8fafc; }
+    tbody tr:hover { background-color: #f1f5f9; }
 
-	.panel-title {
-		font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
-		color: #00d4ff; margin: 0 0 1.2rem;
-		display: flex; align-items: center; gap: 0.6rem;
-	}
-	.panel-title::after { content: ''; flex: 1; height: 1px; background: #1a2a50; }
+    button {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
+        transition: all 0.2s;
+    }
+    button:hover { opacity: 0.85; transform: translateY(-1px); }
 
-	.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.8rem; }
-	.form-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .btn-guardar { background-color: #28a745; color: white; }
+    .btn-recargar { background-color: #17a2b8; color: white; }
+    .btn-buscar { background-color: #6f42c1; color: white; }
+    .btn-peligro { background-color: #dc3545; color: white; }
+    .btn-cargar { background-color: #007bff; color: white; }
+    .btn-editar { background-color: #ffc107; color: #1e293b; }
+    .btn-borrar { background-color: #dc3545; color: white; }
 
-	label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: #5a7a9f; }
-
-	input, select {
-		background: #080d1e; border: 1px solid #1a2a50; border-radius: 5px;
-		color: #e8f4ff; font-family: inherit; font-size: 0.85rem;
-		padding: 0.55rem 0.75rem; transition: border-color 0.2s; outline: none;
-	}
-	input:focus, select:focus { border-color: #00d4ff; }
-	input::placeholder { color: #5a7a9f; }
-	select option { background: #080d1e; }
-
-	.btn-row { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 1rem; }
-
-	button {
-		font-size: 0.78rem; letter-spacing: 0.05em; padding: 0.55rem 1.1rem;
-		border-radius: 5px; border: none; cursor: pointer; transition: all 0.2s;
-	}
-
-	.btn-primary  { background: #00d4ff; color: #04060f; font-weight: 700; }
-	.btn-primary:hover { background: #00b8dd; }
-	.btn-secondary { background: transparent; border: 1px solid #5a7a9f; color: #5a7a9f; }
-	.btn-secondary:hover { border-color: #e8f4ff; color: #e8f4ff; }
-	.btn-danger { background: transparent; border: 1px solid #ff4444; color: #ff4444; }
-	.btn-danger:hover { background: #ff4444; color: #fff; }
-
-	.toolbar { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; }
-	.search-box { flex: 1; min-width: 180px; }
-	.count-badge { font-size: 0.78rem; color: #5a7a9f; margin-left: auto; }
-	.count-badge strong { color: #00d4ff; }
-
-	.table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #1a2a50; }
-	table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-	thead tr { background: #080d1e; }
-	th {
-		font-size: 0.63rem; letter-spacing: 0.15em; text-transform: uppercase;
-		color: #5a7a9f; padding: 0.75rem 1rem; text-align: left;
-		border-bottom: 1px solid #1a2a50; white-space: nowrap;
-	}
-	td { padding: 0.7rem 1rem; border-bottom: 1px solid #0f1d3a; vertical-align: middle; }
-	tr:last-child td { border-bottom: none; }
-	tbody tr:hover { background: #0f1a30; }
-
-	.badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; }
-	.badge-success   { background: #00ff9d22; color: #00ff9d; border: 1px solid #00ff9d44; }
-	.badge-failure   { background: #ff444422; color: #ff4444; border: 1px solid #ff444444; }
-	.badge-partial   { background: #ffaa0022; color: #ffaa00; border: 1px solid #ffaa0044; }
-	.badge-prelaunch { background: #00d4ff22; color: #00d4ff; border: 1px solid #00d4ff44; }
-
-	.action-btns { display: flex; gap: 0.4rem; }
-	.btn-icon {
-		background: transparent; border: 1px solid #1a2a50; color: #5a7a9f;
-		padding: 0.3rem 0.6rem; font-size: 0.75rem; border-radius: 4px;
-		cursor: pointer; transition: all 0.15s; text-decoration: none;
-		display: inline-flex; align-items: center;
-	}
-	.btn-icon:hover     { border-color: #00d4ff; color: #00d4ff; }
-	.btn-icon.del:hover { border-color: #ff4444; color: #ff4444; }
-
-	.empty { text-align: center; padding: 3rem; color: #5a7a9f; font-size: 0.85rem; }
-	.empty span { display: block; font-size: 2.5rem; margin-bottom: 0.8rem; }
+    .paginacion {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #ffffff;
+        padding: 12px 20px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        font-size: 14px;
+        font-weight: 500;
+        color: #64748b;
+    }
+    .btn-paginacion {
+        background-color: #f1f5f9;
+        color: #007bff;
+        border: 1px solid #cbd5e1;
+    }
+    .btn-paginacion:hover:not(:disabled) {
+        background-color: #e0f2fe;
+        border-color: #bae6fd;
+    }
+    .btn-paginacion:disabled {
+        background-color: #f1f5f9;
+        color: #cbd5e1;
+        cursor: not-allowed;
+        border-color: #e2e8f0;
+    }
 </style>
