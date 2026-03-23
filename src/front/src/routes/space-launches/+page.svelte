@@ -1,6 +1,7 @@
 <script>
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
+    import { fade } from 'svelte/transition'; // Importamos el efecto de desvanecimiento
 
     const API = '/api/v1/space-launches';
 
@@ -15,10 +16,15 @@
     let busquedaPais = $state('');
     let busquedaEmpresa = $state('');
 
-    onMount(getMisiones);
+    onMount(() => getMisiones());
 
-    async function getMisiones() {
-        limpiarMensajes();
+    async function getMisiones(mantenerMensajes = false) {
+        // Solo limpiamos si no nos piden explícitamente mantenerlos (como al borrar)
+        if (!mantenerMensajes) {
+            mensajeError = '';
+            mensajeExito = '';
+        }
+        
         try {
             let url = `${API}?limit=${limit}&offset=${offset}`;
             if (busquedaPais) url += `&country=${busquedaPais}`;
@@ -43,11 +49,13 @@
         getMisiones();
     }
 
-    function recargarLista() {
-        busquedaPais = '';
-        busquedaEmpresa = '';
+    function recargarLista(mantenerMensajes = false) {
+        if (!mantenerMensajes) {
+            busquedaPais = '';
+            busquedaEmpresa = '';
+        }
         offset = 0;
-        getMisiones();
+        getMisiones(mantenerMensajes);
     }
 
     function paginaSiguiente() {
@@ -68,7 +76,7 @@
         if (res.ok) {
             const data = await res.json();
             mostrarExito(`Se han cargado ${data.count} misiones correctamente.`);
-            recargarLista();
+            recargarLista(true);
         } else if (res.status === 400) {
             mostrarError("La base de datos ya tiene datos cargados.");
         } else {
@@ -91,7 +99,7 @@
         if (res.status === 201) {
             mostrarExito(`¡La misión ${nuevaMision.mission_id} se ha añadido correctamente!`);
             nuevaMision = { mission_id: '', company_name: '', location: '', year: '', rocket_name: '', mission_status: '', country: '' };
-            recargarLista();
+            recargarLista(true);
         } else if (res.status === 409) {
             mostrarError(`Ya existe una misión con el ID '${nuevaMision.mission_id}'.`);
         } else if (res.status === 400) {
@@ -109,7 +117,7 @@
 
         if (res.status === 200) {
             mostrarExito(`La misión ${id} ha sido eliminada.`);
-            getMisiones();
+            getMisiones(true); // Pasamos true para que el mensaje no se borre al recargar la tabla
         } else if (res.status === 404) {
             mostrarError(`No existe la misión con ID '${id}' en '${country}'.`);
         } else {
@@ -125,29 +133,46 @@
 
         if (res.status === 200) {
             mostrarExito("Se han eliminado todas las misiones.");
-            recargarLista();
+            recargarLista(true);
         } else {
             mostrarError("Error al vaciar la base de datos.");
         }
     }
 
-    function mostrarExito(msg) { mensajeExito = msg; }
-    function mostrarError(msg) { mensajeError = msg; }
-    function limpiarMensajes() { mensajeExito = ''; mensajeError = ''; }
+    // --- Funciones de Feedback con temporizador ---
+    function mostrarExito(msg) { 
+        mensajeExito = msg; 
+        setTimeout(() => { mensajeExito = ''; }, 3500); // 3.5 segundos
+    }
+    
+    function mostrarError(msg) { 
+        mensajeError = msg; 
+        setTimeout(() => { mensajeError = ''; }, 5000); // 5 segundos
+    }
+
+    function limpiarMensajes() { 
+        mensajeExito = ''; 
+        mensajeError = ''; 
+    }
 </script>
 
 <main>
     <h2>Gestión de Lanzamientos Espaciales</h2>
 
-    {#if mensajeExito} <div class="alerta exito">{mensajeExito}</div> {/if}
-    {#if mensajeError} <div class="alerta error">{mensajeError}</div> {/if}
+    {#if mensajeExito} 
+        <div transition:fade class="alerta exito">{mensajeExito}</div> 
+    {/if}
+    
+    {#if mensajeError} 
+        <div transition:fade class="alerta error">{mensajeError}</div> 
+    {/if}
 
     <section class="busqueda-box">
         <h3>🔍 Buscar Misiones</h3>
         <input type="text" placeholder="Buscar por País (ej. USA)" bind:value={busquedaPais}>
         <input type="text" placeholder="Buscar por Empresa" bind:value={busquedaEmpresa}>
         <button onclick={buscar} class="btn-buscar">Buscar</button>
-        <button onclick={recargarLista} class="btn-recargar">Limpiar y Recargar Lista</button>
+        <button onclick={() => recargarLista()} class="btn-recargar">Limpiar y Recargar Lista</button>
     </section>
 
     <section class="formulario">
