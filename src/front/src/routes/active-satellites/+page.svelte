@@ -2,7 +2,6 @@
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
 
-    // Adaptado a la ruta de satélites
     const API_URL = '/api/v1/active-satellites';
 
     let satellites = $state([]);
@@ -19,7 +18,6 @@
     let mensajeExito = $state('');
     let mensajeError = $state('');
 
-    // --- PAGINACIÓN Y BÚSQUEDA ---
     let limit = 10; 
     let offset = $state(0); 
     let busquedaPais = $state('');
@@ -30,7 +28,6 @@
     async function getSatellites() {
         limpiarMensajes();
         try {
-            // Construimos la URL con paginación y las búsquedas
             let url = `${API_URL}?limit=${limit}&offset=${offset}`;
             if (busquedaPais) url += `&country=${busquedaPais}`;
             if (busquedaNombre) url += `&name=${busquedaNombre}`;
@@ -42,14 +39,26 @@
                     mostrarError("No se encontraron satélites con esos filtros.");
                 }
             } else {
-                mostrarError("No se han podido cargar los datos de los satélites.");
+                mostrarError("No se han podido cargar los datos.");
             }
         } catch (error) {
-            mostrarError("Error de conexión con el servidor principal.");
+            mostrarError("Error de conexión con el servidor.");
         }
     }
 
-    // --- FUNCIONES DE CONTROL ---
+    // --- NUEVA FUNCIÓN: CARGAR DATOS INICIALES ---
+    async function cargarDatosIniciales() {
+        limpiarMensajes();
+        const res = await fetch(`${API_URL}/loadInitialData`);
+        if (res.ok) {
+            const data = await res.json();
+            mostrarExito(`Se han cargado ${data.length} satélites de prueba correctamente.`);
+            recargarLista();
+        } else {
+            mostrarError("Error al cargar los datos iniciales. Es posible que la base de datos ya contenga datos.");
+        }
+    }
+
     function buscar() {
         offset = 0; 
         getSatellites();
@@ -89,29 +98,23 @@
         });
 
         if (res.status === 201) {
-            mostrarExito(`¡El satélite ${nuevoSatelite.name} se ha añadido correctamente!`);
+            mostrarExito(`¡Satélite ${nuevoSatelite.name} añadido!`);
             nuevoSatelite = { name: '', country: '', launch_date: '', launch_mass: '', expected_lifetime: '', apogee_height: '', perigee_height: '' }; 
             recargarLista(); 
         } else if (res.status === 409) {
-            mostrarError(`Ya existe un satélite registrado con el nombre '${nuevoSatelite.name}'.`);
-        } else if (res.status === 400) {
-            mostrarError("Revisa los datos. Faltan campos obligatorios o el formato es incorrecto.");
+            mostrarError(`El satélite '${nuevoSatelite.name}' ya existe.`);
         } else {
-            mostrarError("Ha ocurrido un error inesperado al intentar guardar.");
+            mostrarError("Error al guardar. Revisa los campos.");
         }
     }
 
     async function borrarSatelite(country, name) {
         limpiarMensajes();
-        if (!confirm(`¿Estás seguro de que quieres eliminar el satélite ${name}?`)) return;
-
+        if (!confirm(`¿Eliminar ${name}?`)) return;
         const res = await fetch(`${API_URL}/${country}/${name}`, { method: 'DELETE' });
-
         if (res.status === 200) {
-            mostrarExito(`El satélite ${name} ha sido eliminado.`);
+            mostrarExito("Eliminado correctamente.");
             getSatellites(); 
-        } else if (res.status === 404) {
-            mostrarError(`No existe el satélite '${name}' en '${country}'.`);
         } else {
             mostrarError("No se ha podido eliminar.");
         }
@@ -119,12 +122,10 @@
 
     async function borrarTodos() {
         limpiarMensajes();
-        if (!confirm("¡ATENCIÓN! ¿Seguro que quieres borrar TODOS los satélites?")) return;
-
+        if (!confirm("¿Seguro que quieres borrar TODO?")) return;
         const res = await fetch(API_URL, { method: 'DELETE' });
-
         if (res.status === 200) {
-            mostrarExito("Se han eliminado todos los satélites.");
+            mostrarExito("Base de datos vaciada.");
             recargarLista();
         } else {
             mostrarError("Error al vaciar la base de datos.");
@@ -137,67 +138,55 @@
 </script>
 
 <main>
-    <h2>Gestión de Satélites Activos</h2>
+    <h2>Gestión de Satélites</h2>
 
     {#if mensajeExito} <div class="alerta exito">{mensajeExito}</div> {/if}
     {#if mensajeError} <div class="alerta error">{mensajeError}</div> {/if}
 
     <section class="busqueda-box">
-        <h3>🔍 Buscar Satélites</h3>
-        <input type="text" placeholder="Buscar por País" bind:value={busquedaPais}>
-        <input type="text" placeholder="Buscar por Nombre" bind:value={busquedaNombre}>
+        <h3>🔍 Buscar</h3>
+        <input type="text" placeholder="País" bind:value={busquedaPais}>
+        <input type="text" placeholder="Nombre" bind:value={busquedaNombre}>
         <button onclick={buscar} class="btn-buscar">Buscar</button>
-        <button onclick={recargarLista} class="btn-recargar">Limpiar y Recargar Lista</button>
+        <button onclick={recargarLista} class="btn-recargar">Limpiar</button>
     </section>
 
     <section class="formulario">
-        <h3>➕ Añadir Nuevo Satélite</h3>
-        <div class="grid-form">
-            <input type="text" placeholder="Nombre" bind:value={nuevoSatelite.name}>
-            <input type="text" placeholder="País" bind:value={nuevoSatelite.country}>
-            <input type="text" placeholder="Fecha Lanzamiento (YYYY-MM-DD)" bind:value={nuevoSatelite.launch_date}>
-            <input type="number" placeholder="Masa Lanzamiento (kg)" bind:value={nuevoSatelite.launch_mass}>
-            <input type="number" placeholder="Vida Esperada (años)" bind:value={nuevoSatelite.expected_lifetime}>
-            <input type="number" placeholder="Apogeo (km)" bind:value={nuevoSatelite.apogee_height}>
-            <input type="number" placeholder="Perigeo (km)" bind:value={nuevoSatelite.perigee_height}>
-        </div>
-        <button onclick={crearSatelite} class="btn-guardar">Añadir a la base de datos</button>
+        <h3>➕ Nuevo Satélite</h3>
+        <input type="text" placeholder="Nombre" bind:value={nuevoSatelite.name}>
+        <input type="text" placeholder="País" bind:value={nuevoSatelite.country}>
+        <input type="text" placeholder="Lanzamiento" bind:value={nuevoSatelite.launch_date}>
+        <input type="number" placeholder="Masa (kg)" bind:value={nuevoSatelite.launch_mass}>
+        <input type="number" placeholder="Vida (años)" bind:value={nuevoSatelite.expected_lifetime}>
+        <input type="number" placeholder="Apogeo" bind:value={nuevoSatelite.apogee_height}>
+        <input type="number" placeholder="Perigeo" bind:value={nuevoSatelite.perigee_height}>
+        <button onclick={crearSatelite} class="btn-guardar">Añadir Satélite</button>
     </section>
 
     <div class="acciones-globales">
-        <button onclick={borrarTodos} class="btn-peligro">Borrar TODO</button>
+        <button onclick={cargarDatosIniciales} class="btn-inicial">📥 Cargar Datos Iniciales</button>
+        <button onclick={borrarTodos} class="btn-peligro">🗑️ Borrar Todo</button>
     </div>
 
     <div class="paginacion">
         <button onclick={paginaAnterior} disabled={offset === 0} class="btn-paginacion">⬅ Anterior</button>
-        <span>Mostrando desde el {offset + 1} al {offset + satellites.length}</span>
+        <span>Página {Math.floor(offset/limit) + 1}</span>
         <button onclick={paginaSiguiente} disabled={satellites.length < limit} class="btn-paginacion">Siguiente ➡</button>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th>Nombre</th>
-                <th>País</th>
-                <th>Lanzamiento</th>
-                <th>Masa (kg)</th>
-                <th>Vida (años)</th>
-                <th>Apogeo/Perigeo (km)</th>
-                <th>Acciones</th>
+                <th>Nombre</th><th>País</th><th>Lanzamiento</th><th>Masa</th><th>Vida</th><th>H(a/p)</th><th>Acciones</th>
             </tr>
         </thead>
         <tbody>
             {#each satellites as s}
                 <tr>
-                    <td><strong>{s.name}</strong></td>
-                    <td>{s.country}</td>
-                    <td>{s.launch_date}</td>
-                    <td>{s.launch_mass}</td>
-                    <td>{s.expected_lifetime || 'N/A'}</td>
-                    <td>{s.apogee_height} / {s.perigee_height}</td>
+                    <td>{s.name}</td><td>{s.country}</td><td>{s.launch_date}</td><td>{s.launch_mass}</td><td>{s.expected_lifetime}</td><td>{s.apogee_height}/{s.perigee_height}</td>
                     <td>
                         <button onclick={() => goto(`/active-satellites/${s.country}/${s.name}`)} class="btn-editar">Editar</button>
-                        <button onclick={() => borrarSatelite(s.country, s.name)} class="btn-borrar">Eliminar</button>
+                        <button onclick={() => borrarSatelite(s.country, s.name)} class="btn-borrar">Borrar</button>
                     </td>
                 </tr>
             {/each}
@@ -206,152 +195,28 @@
 </main>
 
 <style>
-    :global(body) {
-        background-color: #f8fafc;
-        color: #334155;
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        margin: 0;
-        padding: 0;
-    }
-
-    main {
-        max-width: 1200px;
-        margin: 40px auto;
-        padding: 0 20px;
-    }
-
-    h2 {
-        color: #1e293b;
-        font-size: 2.2rem;
-        font-weight: 800;
-        margin-bottom: 30px;
-        border-bottom: 3px solid #007bff;
-        display: inline-block;
-        padding-bottom: 5px;
-    }
-
-    h3 {
-        font-size: 1.25rem;
-        color: #475569;
-        margin-top: 0;
-        margin-bottom: 15px;
-        font-weight: 600;
-    }
-
-    .alerta {
-        padding: 16px;
-        border-radius: 8px;
-        margin-bottom: 25px;
-        font-weight: 600;
-        border: 1px solid;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
+    /* ... (Estilos anteriores) ... */
+    :global(body) { background-color: #f8fafc; color: #334155; font-family: sans-serif; }
+    main { max-width: 1100px; margin: 20px auto; padding: 20px; }
+    h2 { border-bottom: 3px solid #007bff; display: inline-block; padding-bottom: 5px; }
+    .alerta { padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid; }
     .exito { background-color: #d1fae5; color: #065f46; border-color: #a7f3d0; }
     .error { background-color: #fee2e2; color: #991b1b; border-color: #fecaca; }
-
-    section {
-        background: #ffffff;
-        padding: 25px;
-        border-radius: 12px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        border: 1px solid #e2e8f0;
-    }
-
-    .busqueda-box {
-        background: #e0f2fe;
-        border-color: #bae6fd;
-    }
-
-    input {
-        padding: 10px 14px;
-        margin: 6px;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        background-color: #ffffff;
-        font-size: 14px;
-        transition: border-color 0.2s;
-    }
-    input:focus {
-        outline: none;
-        border-color: #007bff;
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-    }
-
-    .acciones-globales {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-        justify-content: flex-end;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        background: #ffffff;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        border: 1px solid #e2e8f0;
-        font-size: 14px;
-    }
-    th, td {
-        padding: 16px;
-        text-align: left;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    th {
-        background-color: #f1f5f9;
-        color: #64748b;
-        font-weight: 700;
-        text-transform: uppercase;
-        font-size: 12px;
-        letter-spacing: 0.05em;
-    }
-    tbody tr:hover { background-color: #f1f5f9; }
-
-    button {
-        padding: 8px 14px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 13px;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-    button:hover { opacity: 0.85; transform: translateY(-1px); }
-
+    section { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .busqueda-box { background: #e0f2fe; }
+    input { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
+    .acciones-globales { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+    th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+    th { background: #f1f5f9; }
+    button { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    button:hover { opacity: 0.8; }
+    
+    .btn-inicial { background-color: #007bff; color: white; } /* Color Azul para Carga */
     .btn-guardar { background-color: #28a745; color: white; }
-    .btn-recargar { background-color: #17a2b8; color: white; }
     .btn-buscar { background-color: #6f42c1; color: white; }
-    .btn-peligro { background-color: #dc3545; color: white; }
-    .btn-editar { background-color: #ffc107; color: #1e293b; }
-    .btn-borrar { background-color: #dc3545; color: white; }
-
-    .paginacion {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #ffffff;
-        padding: 12px 20px;
-        border-radius: 12px;
-        margin-bottom: 15px;
-        border: 1px solid #e2e8f0;
-        color: #64748b;
-    }
-    .btn-paginacion {
-        background-color: #f1f5f9;
-        color: #007bff;
-        border: 1px solid #cbd5e1;
-    }
-    .btn-paginacion:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
+    .btn-recargar { background-color: #17a2b8; color: white; }
+    .btn-peligro, .btn-borrar { background-color: #dc3545; color: white; }
+    .btn-editar { background-color: #ffc107; color: #333; }
+    .btn-paginacion { background: #eee; }
 </style>

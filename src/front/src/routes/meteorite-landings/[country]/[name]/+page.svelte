@@ -52,6 +52,28 @@
             mensajeError = "Ha ocurrido un error inesperado.";
         }
     }
+
+    // --- NUEVA FUNCIÓN PARA ELIMINAR ---
+    async function eliminarMeteorito() {
+        mensajeExito = ''; mensajeError = '';
+        
+        // Pedimos confirmación por seguridad antes de borrar
+        if (!confirm(`¿Estás seguro de que quieres eliminar el meteorito ${meteorite.name}? Esta acción no se puede deshacer.`)) return;
+
+        const res = await fetch(`${API_URL}/${countryParam}/${nameParam}`, {
+            method: 'DELETE'
+        });
+
+        if (res.status === 200) {
+            mensajeExito = "¡El meteorito ha sido eliminado con éxito!";
+            // Esperamos 1.5 segundos para que vea el mensaje de éxito y lo mandamos al listado
+            setTimeout(() => goto('/meteorite-landings'), 1500);
+        } else if (res.status === 404) {
+            mensajeError = "El meteorito que intentas borrar ya no existe.";
+        } else {
+            mensajeError = "Ha ocurrido un error al intentar eliminar el meteorito.";
+        }
+    }
 </script>
 
 <main>
@@ -93,6 +115,7 @@
         
         <div class="botones">
             <button onclick={guardarCambios} class="btn-guardar">Guardar cambios</button>
+            <button onclick={eliminarMeteorito} class="btn-eliminar">Eliminar meteorito</button>
             <button onclick={() => goto('/meteorite-landings')} class="btn-volver">Cancelar y volver</button>
         </div>
     </section>
@@ -205,4 +228,7 @@
     
     .btn-guardar { background-color: #28a745; color: white; }
     .btn-volver { background-color: #64748b; color: white; }
+    
+    /* ESTILO PARA EL NUEVO BOTÓN */
+    .btn-eliminar { background-color: #dc3545; color: white; }
 </style>
