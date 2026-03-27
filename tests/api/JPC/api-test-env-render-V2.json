@@ -1,0 +1,22 @@
+{
+	"id": "1d123e07-c744-4e04-8081-cf2aa51b33ef",
+	"name": "renderV2",
+	"values": [
+		{
+			"key": "base-url",
+			"value": "https://sos2526-14.onrender.com",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "api",
+			"value": "/api/v2/",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"color": null,
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2026-03-27T09:05:59.437Z",
+	"_postman_exported_using": "Postman/12.3.6-260327-0350"
+}

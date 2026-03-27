@@ -10,13 +10,13 @@
 		},
 		{
 			"key": "api",
-			"value": "/api/v1/",
+			"value": "/api/v2/",
 			"type": "default",
 			"enabled": true
 		}
 	],
 	"color": null,
 	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2026-03-11T09:19:37.636Z",
-	"_postman_exported_using": "Postman/12.1.2-260311-0232"
+	"_postman_exported_at": "2026-03-27T08:59:24.932Z",
+	"_postman_exported_using": "Postman/12.3.6-260327-0350"
 }
