@@ -1,6 +1,5 @@
 <script>
 	// @ts-nocheck
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 
 	const API = '/api/v2/meteorite-landings';
@@ -135,14 +134,13 @@
 		}
 	}
 
-	async function goToPage(newPage) {
-		page = newPage;
-		await getMeteorites();
+	function goToPage(newPage) {
+		page = newPage; // el $effect se encarga del resto
 	}
 
-	onMount(async () => {
-		await getTotal();
-		await getMeteorites();
+	$effect(() => {
+		getTotal();
+		getMeteorites();
 	});
 </script>
 
