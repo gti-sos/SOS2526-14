@@ -19,6 +19,12 @@
 	let newGeolocation = $state('');
 	let newCountry = $state('');
 
+	// Filtro
+	let filterFrom = $state('');
+	let filterTo = $state('');
+	let filtered = $state([]);
+	let filterLoading = $state(false);
+
 	let totalPages = $derived(Math.ceil(total / LIMIT));
 
 	async function getMeteorites() {
@@ -110,6 +116,25 @@
 		}
 	}
 
+	async function buscarFiltro() {
+		if (!filterFrom && !filterTo) {
+			alert('❌ Introduce al menos un año.');
+			return;
+		}
+		filterLoading = true;
+		let url = `${API}/statistics?`;
+		if (filterFrom) url += `&from=${filterFrom}`;
+		if (filterTo)   url += `&to=${filterTo}`;
+		try {
+			const res = await fetch(url);
+			if (res.ok) filtered = await res.json();
+		} catch (err) {
+			console.error('Error de red:', err);
+		} finally {
+			filterLoading = false;
+		}
+	}
+
 	async function goToPage(newPage) {
 		page = newPage;
 		await getMeteorites();
@@ -127,6 +152,37 @@
 <button onclick={deleteAll}>Borrar todos</button>
 
 <br><br>
+
+<!-- FILTRO POR AÑOS -->
+<h3>Filtrar por rango de años</h3>
+<input type="number" bind:value={filterFrom} placeholder="Desde (ej: 2000)" />
+<input type="number" bind:value={filterTo} placeholder="Hasta (ej: 2017)" />
+<button onclick={buscarFiltro}>Buscar</button>
+<button onclick={() => { filterFrom = ''; filterTo = ''; filtered = []; }}>Limpiar</button>
+
+{#if filterLoading}
+    <p>Cargando...</p>
+{:else if filtered.length > 0}
+    <p>{filtered.length} meteoritos encontrados</p>
+    <table border="1" cellpadding="8" cellspacing="0">
+        <thead>
+            <tr>
+                <th>País</th><th>Nombre</th><th>ID</th>
+                <th>Masa (g)</th><th>Año</th><th>Geolocalización</th>
+            </tr>
+        </thead>
+        <tbody>
+            {#each filtered as m}
+                <tr>
+                    <td>{m.country}</td><td>{m.name}</td><td>{m.id}</td>
+                    <td>{m.mass}</td><td>{m.year}</td><td>{m.geolocation}</td>
+                </tr>
+            {/each}
+        </tbody>
+    </table>
+{:else if filtered.length === 0 && (filterFrom || filterTo)}
+    <p>No se encontraron meteoritos en ese rango.</p>
+{/if}
 
 <!-- FORMULARIO DE CREACIÓN -->
 <h3>Crear nuevo meteorito</h3>
