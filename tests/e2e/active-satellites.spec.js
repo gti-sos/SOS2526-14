@@ -9,13 +9,13 @@ test.describe('Tests e2e simplificados para Active Satellites', () => {
     await expect(page.locator('table')).toBeVisible();
   });
 
-  test('2. Debe crear un recurso', async ({ page }) => {
+ test('2. Debe crear un recurso', async ({ page }) => {
     await page.goto(BASE_URL);
     
-    // Usamos un nombre único con la fecha actual para que nunca dé error 409 (Conflicto)
+    // Usamos un nombre único con la fecha actual para evitar errores 409
     const nombreUnico = 'Sat-' + Date.now(); 
     
-    // Como hay dos inputs de "Nombre" y "País" (arriba en buscar y abajo en crear), usamos .last()
+    // Llenamos el formulario de creación (los últimos inputs de la página)
     await page.getByPlaceholder('Nombre').last().fill(nombreUnico);
     await page.getByPlaceholder('País').last().fill('Spain');
     await page.getByPlaceholder('Lanzamiento (YYYY-MM-DD)').last().fill('2020-01-01');
@@ -23,8 +23,12 @@ test.describe('Tests e2e simplificados para Active Satellites', () => {
     
     await page.getByRole('button', { name: 'Añadir Satélite' }).click();
     
-    // Simplificación: En lugar de buscar el mensaje, comprobamos que el satélite nuevo está en la tabla
-    await expect(page.locator('table').locator(`text=${nombreUnico}`)).toBeVisible();
+    // ✅ CAMBIO CLAVE: Validamos el mensaje de éxito que aparece arriba en el render
+    // Esto confirma que la acción fue exitosa y el usuario recibió el feedback.
+    await expect(page.getByText(`¡El satélite '${nombreUnico}' de 'Spain' se ha creado correctamente!`)).toBeVisible();
+    
+    
+    await expect(page.locator('table')).toContainText(nombreUnico);
   });
 
   test('3. Debe buscar recursos', async ({ page }) => {
