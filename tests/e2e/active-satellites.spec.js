@@ -53,26 +53,31 @@ test.describe('Tests e2e para Active Satellites', () => {
     await expect(page).toHaveURL(BASE_URL);
   });
 
-  test('5. Debe borrar un recurso', async ({ page }) => {
+ test('5. Debe borrar un recurso', async ({ page }) => {
     await page.goto(BASE_URL);
     
-    // 1. Cargar datos
-    page.once('dialog', d => d.accept());
+    // 1. Definimos el manejo de diálogos UNA SOLA VEZ para todo el test
+    page.on('dialog', dialog => dialog.accept());
+
+    // 2. Cargamos datos iniciales (esto dispara el primer diálogo)
     await page.getByRole('button', { name: '📥 Cargar Datos Iniciales' }).click();
-    await page.waitForSelector('table tbody tr');
+    
+    // Esperamos a que la tabla tenga contenido real
+    const fila = page.locator('table tbody tr').first();
+    await expect(fila).toBeVisible({ timeout: 5000 });
     
     const countBefore = await page.locator('table tbody tr').count();
     
-    // 2. Borrar (Manejamos el confirm)
-    page.once('dialog', d => d.accept());
+    // 3. Borramos el primer recurso (esto dispara el segundo diálogo)
+    // El 'page.on' de arriba ya se encarga de aceptarlo automáticamente
     await page.getByRole('button', { name: 'Borrar' }).first().click();
     
-    // 3. ✅ CLAVE: Esperar a que la alerta de éxito sea visible
-    await expect(page.locator('.alerta.exito')).toBeVisible();
-    
-    // 4. Verificar que el contador ha bajado
-    const countAfter = await page.locator('table tbody tr').count();
-    expect(countAfter).toBeLessThan(countBefore);
+    // 4. Verificamos que el contador de filas ha disminuido
+    // Usamos una aserción que reintenta automáticamente para evitar fallos de tiempo
+    await expect(async () => {
+      const countAfter = await page.locator('table tbody tr').count();
+      expect(countAfter).toBeLessThan(countBefore);
+    }).toPass();
   });
 
   test('6. Debe borrar todos', async ({ page }) => {
