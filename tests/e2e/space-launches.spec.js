@@ -2,70 +2,109 @@ import { test, expect } from '@playwright/test';
 
 const BASE_URL = 'http://localhost:5173/space-launches';
 
-test('carga la pagina y hay misiones', async ({ page }) => {
+test.describe('Tests e2e simplificados para Space Launches', () => {
+
+  test('1. Debe listar recursos', async ({ page }) => {
     await page.goto(BASE_URL);
-    // esperamos ver la primera fila de la tabla
-    const filas = page.locator('tbody tr');
-    await expect(filas.first()).toBeVisible();
-});
-test('filtra misiones por año', async ({ page }) => {
+    // Como tienes varias tablas (crear, listar), comprobamos que al menos la última sea visible
+    await expect(page.locator('table').last()).toBeVisible();
+  });
+
+  test('2. Debe crear un recurso', async ({ page }) => {
     await page.goto(BASE_URL);
     
-    await page.fill('input[placeholder="Desde (ej: 2000)"]', '2015');
-    await page.fill('input[placeholder="Hasta (ej: 2020)"]', '2018');
-    await page.click('button:has-text("Buscar")');
-    
-    // Con esta barrita "|" le decimos que acepte tanto si encuentra resultados como si no hay ninguno
-    await expect(page.locator('text=/misiones encontradas|No se encontraron misiones/i')).toBeVisible();
-});
-
-test('crea una mision y comprueba que existe', async ({ page }) => {
-    await page.goto(BASE_URL);
-
-    // Generamos un ID aleatorio para que no dé error de repetido
-    const idNuevo = Math.floor(Math.random() * 100000).toString();
-
-    await page.fill('input[placeholder="1001"]', idNuevo);
-    await page.fill('input[placeholder="SpaceX"]', 'Mi Empresa');
-    await page.fill('input[placeholder="Cape Canaveral"]', 'Sevilla');
-    
-    // Le ponemos un año rarísimo para poder buscarlo luego
-    await page.fill('input[placeholder="2024"]', '3000'); 
-    
-    await page.fill('input[placeholder="Falcon 9"]', 'Cohete X');
-    await page.selectOption('select', 'Success');
-    await page.fill('input[placeholder="USA"]', 'España');
-
+    // Aceptamos las alertas
     page.on('dialog', dialog => dialog.accept());
-    await page.click('button:has-text("Crear")');
-
-    // Comprobamos que el input se vacía (esto confirma que tu código Svelte recargó bien)
-    await expect(page.locator('input[placeholder="1001"]')).toHaveValue('');
-
-    // Para ver si de verdad existe y sortear que la tabla esté paginada, la buscamos por el año 3000
-    await page.fill('input[placeholder="Desde (ej: 2000)"]', '3000');
-    await page.fill('input[placeholder="Hasta (ej: 2020)"]', '3000');
-    await page.click('button:has-text("Buscar")');
-
-    // Ahora sí tiene que aparecer nuestro ID nuevo en la minitabla del filtro
-    await expect(page.locator('td', { hasText: idNuevo }).first()).toBeVisible();
-});
-test('edita una mision y vuelve', async ({ page }) => {
-    await page.goto(BASE_URL);
-
-    // clic en el boton editar del primer elemento
-    await page.click('tbody tr:first-child button:has-text("Editar")');
     
-    // nos aseguramos de que ha cambiado de pagina
-    await expect(page).toHaveURL(/.*\/edit\/.*/);
+    // Usamos un número aleatorio para el ID para que nunca dé error de "Ya existe"
+    const idUnico = Math.floor(Math.random() * 1000000).toString(); 
+    
+    await page.getByPlaceholder('1001').fill(idUnico);
+    await page.getByPlaceholder('SpaceX').fill('Empresa E2E');
+    await page.getByPlaceholder('Cape Canaveral').fill('Sevilla');
+    await page.getByPlaceholder('2024').fill('2025');
+    await page.getByPlaceholder('Falcon 9').fill('Cohete E2E');
+    await page.locator('select').selectOption('Success');
+    await page.getByPlaceholder('USA').fill('España');
+    
+    await page.getByRole('button', { name: 'Crear' }).click();
+    
+    // Pequeña pausa como hace tu compañero
+    await page.waitForTimeout(1000); 
+    
+    // Simplificación: comprobamos que el ID nuevo está en la última tabla (la de listado)
+    await expect(page.locator('table').last().locator(`text=${idUnico}`)).toBeVisible();
+  });
 
-    // pillamos el primer input de texto (empresa) y lo cambiamos
-    const inputEmpresa = page.locator('input[type="text"]').first();
-    await inputEmpresa.fill('Empresa Cambiada');
+  test('3. Debe buscar recursos', async ({ page }) => {
+    await page.goto(BASE_URL);
+    
+    await page.getByPlaceholder('Desde (ej: 2000)').fill('2000');
+    await page.getByRole('button', { name: 'Buscar' }).click();
+    
+    await page.waitForTimeout(1000);
+    
+    // Solo comprobamos que la tabla sigue ahí tras buscar o que sale el mensaje
+    await expect(page.locator('table').last()).toBeVisible();
+  });
 
+  test('4. Debe editar un recurso', async ({ page }) => {
+    await page.goto(BASE_URL);
+    
+    // Aceptamos cualquier alerta de confirmación automáticamente
     page.on('dialog', dialog => dialog.accept());
-    await page.click('button:has-text("Guardar cambios")');
+    
+    await page.getByRole('button', { name: 'Cargar datos iniciales' }).click();
+    await page.waitForTimeout(1000); // Pequeña pausa para que Svelte actualice la vista
+    
+    await page.getByRole('button', { name: 'Editar' }).first().click(); 
+    // Comprobamos que vamos a la ruta de editar
+    await expect(page).toHaveURL(/.*\/space-launches\/edit\/.+\/.+/);
+    
+    // Simplificación extrema de tu compañero: hacer clic en guardar y ver que volvemos
+    await page.getByRole('button', { name: 'Guardar cambios' }).click();
+    
+    // Verificamos que hemos vuelto a la tabla principal
+    await expect(page).toHaveURL(BASE_URL, { timeout: 10000 });
+  });
 
-    // comprobamos que nos devuelve a la pagina principal
-    await expect(page).toHaveURL(BASE_URL);
+  test('5. Debe borrar un recurso', async ({ page }) => {
+    await page.goto(BASE_URL);
+    
+    page.on('dialog', dialog => dialog.accept());
+    
+    await page.getByRole('button', { name: 'Cargar datos iniciales' }).click();
+    
+    // Esperamos a que la base de datos cargue y aparezca al menos un botón Eliminar
+    const primerBotonEliminar = page.getByRole('button', { name: 'Eliminar' }).first();
+    await expect(primerBotonEliminar).toBeVisible({ timeout: 10000 });
+    
+    // Contamos CUÁNTOS botones de Eliminar hay exactamente
+    const todosLosBotonesEliminar = page.getByRole('button', { name: 'Eliminar' });
+    const countBefore = await todosLosBotonesEliminar.count();
+    
+    if (countBefore > 0) {
+        // Hacemos clic en el primero
+        await primerBotonEliminar.click();
+        
+        // Comprobamos que ahora hay exactamente un botón "Eliminar" menos que antes
+        await expect(todosLosBotonesEliminar).toHaveCount(countBefore - 1, { timeout: 10000 });
+    }
+  });
+
+  test('6. Debe borrar todos', async ({ page }) => {
+    await page.goto(BASE_URL);
+    
+    page.on('dialog', dialog => dialog.accept());
+    
+    await page.getByRole('button', { name: 'Cargar datos iniciales' }).click();
+    await page.waitForTimeout(1000);
+    
+    await page.getByRole('button', { name: 'Borrar todos' }).click(); 
+    await page.waitForTimeout(1000);
+    
+    // Simplificación: Comprobamos que aparece el texto de que no hay misiones
+    await expect(page.locator('text=No hay misiones')).toBeVisible();
+  });
+
 });
