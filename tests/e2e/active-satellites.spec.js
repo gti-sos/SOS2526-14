@@ -5,27 +5,31 @@ const BASE_URL = 'http://localhost:5173/active-satellites';
 test.describe('Tests e2e Active Satellites', () => {
 
   test.beforeEach(async ({ page }) => {
-    // Manejador global: acepta todos los diálogos automáticamente
+    // Acepta automáticamente todos los diálogos (confirm/alert) para evitar errores de "already handled".
     page.on('dialog', dialog => dialog.accept());
     
     await page.goto(BASE_URL);
     
-    // Carga de datos resiliente: si no hay filas, intentamos cargar
+    // Si la tabla está vacía, cargamos los datos iniciales para asegurar que los tests tengan contenido.
     const filas = page.locator('table tbody tr');
     if (await filas.count() === 0) {
       const btnCargar = page.getByRole('button', { name: /Cargar Datos/i });
       if (await btnCargar.isVisible()) {
         await btnCargar.click();
-        // Esperamos un momento a que aparezca al menos una fila, pero sin bloquear el test si falla
+        // Espera a que aparezca la primera fila con un margen de seguridad.
         await filas.first().waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
       }
     }
   });
 
-  // ... (Tests 1, 3, 4 y 5 se mantienen igual ya que indicas que están bien)
+  test('1. Debe listar recursos', async ({ page }) => {
+    await expect(page.locator('table')).toBeVisible();
+  });
 
   test('2. Debe crear un recurso', async ({ page }) => {
     const nombreUnico = 'Sat-' + Date.now();
+    
+    // Rellenamos el formulario usando selectores específicos.
     const formulario = page.locator('section.formulario');
     await formulario.getByPlaceholder('Nombre').fill(nombreUnico);
     await formulario.getByPlaceholder('País').fill('Spain');
@@ -34,20 +38,47 @@ test.describe('Tests e2e Active Satellites', () => {
     
     await page.getByRole('button', { name: 'Añadir Satélite' }).click();
     
-    // Verificación por alerta (como funcionaba antes)
+    // Verificamos la aparición de la alerta de éxito.
     await expect(page.locator('.alerta.exito, .alert-success')).toBeVisible({ timeout: 10000 });
   });
 
+  test('3. Debe buscar recursos', async ({ page }) => {
+    await page.getByPlaceholder('Desde (ej. 2000)').fill('2000');
+    await page.getByRole('button', { name: 'Aplicar Filtros' }).click();
+    await expect(page.locator('table')).toBeVisible();
+  });
+
+  test('4. Debe editar un recurso', async ({ page }) => {
+    // Entramos en la edición del primer satélite de la lista.
+    await page.getByRole('button', { name: 'Editar' }).first().click();
+    await expect(page).toHaveURL(/.*\/active-satellites\/.+/);
+    
+    // Pulsamos el botón principal para volver (Guardar/Aceptar).
+    await page.locator('button').first().click();
+    await expect(page).toHaveURL(BASE_URL);
+  });
+
+  test('5. Debe borrar un recurso', async ({ page }) => {
+    const inicial = await page.locator('table tbody tr').count();
+    
+    // Hacemos clic en el primer botón de borrar; el diálogo se acepta solo gracias al beforeEach.
+    await page.getByRole('button', { name: 'Borrar' }).first().click();
+    
+    // Esperamos a que el contador de filas disminuya.
+    await expect(async () => {
+      const actual = await page.locator('table tbody tr').count();
+      expect(actual).toBeLessThan(inicial);
+    }).toPass();
+  });
+
   test('6. Debe borrar todos', async ({ page }) => {
-    // 1. Aseguramos que el botón es visible antes de hacer clic
     const btnBorrarTodo = page.getByRole('button', { name: /Borrar Todo/i });
     await expect(btnBorrarTodo).toBeVisible();
     
-    // 2. Clic en borrar todo (el diálogo se acepta solo gracias al beforeEach)
-    await btnBorrarTodo.click(); 
+    // El diálogo se gestiona automáticamente por el escuchador global.
+    await btnBorrarTodo.click();
     
-    // 3. Verificamos que la tabla quede vacía
-    // Usamos una aserción que reintenta automáticamente por si la API es lenta
+    // La tabla debe quedar vacía tras la operación.
     await expect(page.locator('table tbody tr')).toHaveCount(0, { timeout: 10000 });
   });
 
