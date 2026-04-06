@@ -24,21 +24,48 @@
 	let filtered = $state([]);
 	let filterLoading = $state(false);
 
+	//Busqueda por campos
+	let filterName = $state('');
+	let filterId = $state('');
+	let filterMass = $state('');
+	let filterYear = $state('');
+	let filterGeolocation = $state('');
+	let filterCountry = $state('');
+
 	let totalPages = $derived(Math.ceil(total / LIMIT));
 
 	async function getMeteorites() {
 		loading = true;
 		const offset = page * LIMIT;
+		const params = new URLSearchParams({ limit: LIMIT, offset });
+
+		if (filterName)        params.append('name', filterName);
+		if (filterId)          params.append('id', filterId);
+		if (filterMass)        params.append('mass', filterMass);
+		if (filterYear)        params.append('year', filterYear);
+		if (filterGeolocation) params.append('geolocation', filterGeolocation);
+		if (filterCountry)     params.append('country', filterCountry);
+
 		try {
-			const res = await fetch(`${API}?limit=${LIMIT}&offset=${offset}`);
-			if (res.ok) {
-				meteorites = await res.json();
-			}
+			const res = await fetch(`${API}?${params}`);
+			if (res.ok) meteorites = await res.json();
 		} catch (err) {
 			console.error('Error de red:', err);
 		} finally {
 			loading = false;
 		}
+	}
+
+	function buscarPorCampos() {
+		page = 0;
+		getMeteorites();
+	}
+
+	function limpiarFiltrosCampos() {
+		filterName = ''; filterId = ''; filterMass = '';
+		filterYear = ''; filterGeolocation = ''; filterCountry = '';
+		page = 0;
+		getMeteorites();
 	}
 
 	async function getTotal() {
@@ -150,6 +177,30 @@
 <button onclick={deleteAll}>Borrar todos</button>
 
 <br><br>
+
+<h3>Buscar por campo</h3>
+<table border="1" cellpadding="6">
+    <thead>
+        <tr>
+            <th>País</th><th>Nombre</th><th>ID</th>
+            <th>Masa (g)</th><th>Año</th><th>Geolocalización</th><th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><input type="text"   bind:value={filterCountry}     placeholder="España" /></td>
+            <td><input type="text"   bind:value={filterName}        placeholder="Nombre" /></td>
+            <td><input type="number" bind:value={filterId}          placeholder="ID" /></td>
+            <td><input type="number" bind:value={filterMass}        placeholder="Masa" /></td>
+            <td><input type="number" bind:value={filterYear}        placeholder="Año" /></td>
+            <td><input type="text"   bind:value={filterGeolocation} placeholder="Geo" /></td>
+            <td>
+                <button onclick={buscarPorCampos}>Buscar</button>
+                <button onclick={limpiarFiltrosCampos}>Limpiar</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
 
 <!-- FILTRO POR AÑOS -->
 <h3>Filtrar por rango de años</h3>
