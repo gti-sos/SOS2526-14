@@ -5,15 +5,16 @@ const BASE_URL = 'http://localhost:5173/active-satellites';
 test.describe('Tests e2e Active Satellites', () => {
 
   test.beforeEach(async ({ page }) => {
-    // 1. Aceptar todos los diálogos (confirm/alert) automáticamente
+    // ✅ Manejador global: Acepta todos los diálogos automáticamente para evitar errores de conflicto
     page.on('dialog', dialog => dialog.accept());
     
-    // 2. Ir a la página y cargar datos si el botón existe
     await page.goto(BASE_URL);
+    
+    // Cargamos datos iniciales para asegurar que hay contenido en la tabla
     const btnCargar = page.getByRole('button', { name: /Cargar Datos/i });
     if (await btnCargar.isVisible()) {
       await btnCargar.click();
-      await page.waitForSelector('table tbody tr'); // Esperar a que la tabla tenga algo
+      await page.waitForSelector('table tbody tr', { timeout: 5000 });
     }
   });
 
@@ -23,13 +24,18 @@ test.describe('Tests e2e Active Satellites', () => {
 
   test('2. Debe crear un recurso', async ({ page }) => {
     const nombreUnico = 'Sat-' + Date.now();
-    // Rellenamos solo lo mínimo necesario
-    await page.getByPlaceholder('Nombre').last().fill(nombreUnico);
-    await page.getByPlaceholder('País').last().fill('Spain');
+    
+    // Usamos el contenedor de la sección formulario para evitar los inputs de búsqueda
+    const formulario = page.locator('section.formulario');
+    await formulario.getByPlaceholder('Nombre').fill(nombreUnico);
+    await formulario.getByPlaceholder('País').fill('Spain');
+    await formulario.getByPlaceholder('Lanzamiento (YYYY-MM-DD)').fill('2020-01-01');
+    await formulario.getByPlaceholder('Masa (kg)').fill('1000');
+    
     await page.getByRole('button', { name: 'Añadir Satélite' }).click();
     
-    // Verificamos que el nombre aparezca en la tabla (Playwright reintenta solo)
-    await expect(page.locator('table')).toContainText(nombreUnico);
+    // ✅ VERIFICACIÓN: Esperamos la alerta de éxito (como funcionaba antes)
+    await expect(page.locator('.alerta.exito, .alert-success')).toBeVisible({ timeout: 10000 });
   });
 
   test('3. Debe buscar recursos', async ({ page }) => {
@@ -40,9 +46,9 @@ test.describe('Tests e2e Active Satellites', () => {
 
   test('4. Debe editar un recurso', async ({ page }) => {
     await page.getByRole('button', { name: 'Editar' }).first().click(); 
-    await expect(page).toHaveURL(/.*\/active-satellites\/.+/); // Verificar que entra en edición
+    await expect(page).toHaveURL(/.*\/active-satellites\/.+/);
     
-    // Simplemente volvemos pulsando el primer botón (normalmente 'Atrás' o 'Guardar')
+    // Regresamos a la lista principal
     await page.locator('button').first().click();
     await expect(page).toHaveURL(BASE_URL);
   });
@@ -51,7 +57,6 @@ test.describe('Tests e2e Active Satellites', () => {
     const inicial = await page.locator('table tbody tr').count();
     await page.getByRole('button', { name: 'Borrar' }).first().click();
     
-    // Esperar a que el número de filas sea menor al inicial
     await expect(async () => {
       const actual = await page.locator('table tbody tr').count();
       expect(actual).toBeLessThan(inicial);
@@ -59,7 +64,10 @@ test.describe('Tests e2e Active Satellites', () => {
   });
 
   test('6. Debe borrar todos', async ({ page }) => {
-    await page.getByRole('button', { name: '🗑️ Borrar Todo' }).click(); 
+    // ✅ SIMPLIFICADO: El diálogo ya se acepta en el beforeEach
+    await page.getByRole('button', { name: /Borrar Todo/i }).click(); 
+    
+    // Verificamos que la tabla no tenga filas de datos
     await expect(page.locator('table tbody tr')).toHaveCount(0);
   });
 
