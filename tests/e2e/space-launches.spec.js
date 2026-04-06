@@ -44,25 +44,17 @@ test.describe('Tests e2e Space Launches', () => {
   });
 
   test('5. Debe borrar un recurso', async ({ page }) => {
-    await page.goto(BASE_URL);
+  await page.goto(BASE_URL);
 
-    // Cargar datos y esperar a que la tabla se renderice con botones Eliminar
-    await page.getByRole('button', { name: 'Cargar datos iniciales' }).click();
-    const primerBotonEliminar = page.getByRole('button', { name: 'Eliminar' }).first();
-    await expect(primerBotonEliminar).toBeVisible({ timeout: 10000 });
+  await page.getByRole('button', { name: 'Cargar datos iniciales' }).click();
+  const primerBotonEliminar = page.getByRole('button', { name: 'Eliminar' }).first();
+  await expect(primerBotonEliminar).toBeVisible({ timeout: 10000 });
 
-    const todosLosBotonesEliminar = page.getByRole('button', { name: 'Eliminar' });
-    const countBefore = await todosLosBotonesEliminar.count();
+  await primerBotonEliminar.click();
 
-    if (countBefore > 0) {
-      await primerBotonEliminar.click();
-
-      // Esperar a que el DOM actualice: el conteo debe bajar
-      await expect(async () => {
-        const countAfter = await todosLosBotonesEliminar.count();
-        expect(countAfter).toBeLessThan(countBefore);
-      }).toPass({ timeout: 8000 });
-    }
+  // Verificar el mensaje de éxito que muestra el componente Svelte
+  await expect(page.locator('p').filter({ hasText: /✅ Misión .+ eliminada correctamente/ }))
+    .toBeVisible({ timeout: 8000 });
   });
 
   test('6. Debe borrar todos', async ({ page }) => {
