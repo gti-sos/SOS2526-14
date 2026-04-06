@@ -1,3 +1,6 @@
 {"name":"Sat-1775469395536","country":"Spain","launch_date":"2020-01-01","launch_mass":1000,"expected_lifetime":0,"apogee_height":0,"perigee_height":0,"_id":"LDz64mZWQfxlQvez"}
 {"name":"Sat-1775469395536","country":"Spain","launch_date":"2020-01-01","launch_mass":1000,"expected_lifetime":null,"apogee_height":0,"perigee_height":0,"_id":"LDz64mZWQfxlQvez"}
 {"$$deleted":true,"_id":"LDz64mZWQfxlQvez"}
+{"name":"Sat-1775475931559","country":"Spain","launch_date":"2020-01-01","launch_mass":1000,"expected_lifetime":0,"apogee_height":0,"perigee_height":0,"_id":"a5xhLiBkZlI9tMDP"}
+{"name":"Sat-1775475931559","country":"Spain","launch_date":"2020-01-01","launch_mass":1000,"expected_lifetime":null,"apogee_height":0,"perigee_height":0,"_id":"a5xhLiBkZlI9tMDP"}
+{"$$deleted":true,"_id":"a5xhLiBkZlI9tMDP"}

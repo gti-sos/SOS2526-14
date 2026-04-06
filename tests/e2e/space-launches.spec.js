@@ -3,10 +3,10 @@ import { test, expect } from '@playwright/test';
 const BASE_URL = 'http://localhost:5173/space-launches';
 
 test.describe('Tests e2e Space Launches', () => {
-  test.beforeAll(async ({browser}) => {
+  test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
     await page.goto(BASE_URL);
-    page.getByRole('button', { name: /Cargar datos iniciales/i}).click();
+    page.getByRole('button', { name: /Cargar datos iniciales/i }).click();
     await page.waitForLoadState('networkidle'); // Pequeña pausa para que Svelte actualice la vista
   });
 
@@ -37,6 +37,8 @@ test.describe('Tests e2e Space Launches', () => {
     await page.waitForLoadState('networkidle'); // Pequeña pausa para que Svelte actualice la vista
 
     await page.getByRole('button', { name: 'Editar' }).first().click();
+    await page.waitForLoadState('networkidle'); // Pequeña pausa para que Svelte actualice la vista
+
     await expect(page).toHaveURL(/.*\/space-launches\/edit\/.+\/.+/);
 
     await page.getByRole('button', { name: 'Guardar cambios' }).click();
