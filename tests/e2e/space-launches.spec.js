@@ -6,7 +6,7 @@ test.describe('Tests e2e Space Launches', () => {
   test.beforeAll(async ({browser}) => {
     const page = await browser.newPage();
     await page.goto(BASE_URL);
-    page.getByRole('botton', { name: /Cargar datos iniciales/i}).click();
+    page.getByRole('button', { name: /Cargar datos iniciales/i}).click();
     await page.waitForLoadState('networkidle'); // Pequeña pausa para que Svelte actualice la vista
   });
 
