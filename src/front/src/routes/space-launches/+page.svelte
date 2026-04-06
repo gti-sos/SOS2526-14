@@ -11,7 +11,6 @@
     let page = $state(0);
     let loading = $state(true);
 
-    // Campos del formulario de creación
     let newMissionId = $state('');
     let newCompany = $state('');
     let newLocation = $state('');
@@ -20,14 +19,22 @@
     let newStatus = $state('');
     let newCountry = $state('');
 
-    // Filtro statistics
     let filterFrom = $state('');
     let filterTo = $state('');
     let filtered = $state([]);
     let filterLoading = $state(false);
     let filterUsed = $state(false);
 
+    // Mensaje de estado reactivo — reemplaza todos los alert() y confirm()
+    let statusMsg = $state('');
+    let statusOk = $state(true);
+
     let totalPages = $derived(Math.ceil(total / LIMIT));
+
+    function setStatus(msg, ok = true) {
+        statusMsg = msg;
+        statusOk = ok;
+    }
 
     async function getMisiones() {
         loading = true;
@@ -37,7 +44,7 @@
             if (res.ok) {
                 misiones = await res.json();
             } else {
-                alert(`❌ Error al cargar las misiones. Código: ${res.status}`);
+                setStatus(`❌ Error al cargar las misiones. Código: ${res.status}`, false);
             }
         } catch (err) {
             console.error('Error de red:', err);
@@ -55,41 +62,46 @@
     }
 
     async function loadInitialData() {
-        if (!confirm('¿Cargar los datos iniciales del CSV?')) return;
         const res = await fetch(`${API}/loadInitialData`);
-        alert(res.ok ? '✅ Datos cargados correctamente.' : '❌ Error. Puede que ya haya datos cargados.');
-        page = 0;
-        await getTotal();
-        await getMisiones();
+        if (res.ok) {
+            setStatus('✅ Datos cargados correctamente.');
+            page = 0;
+            await getTotal();
+            await getMisiones();
+        } else {
+            setStatus('❌ Error. Puede que ya haya datos cargados.', false);
+        }
     }
 
     async function deleteAll() {
-        if (!confirm('⚠️ ¿Borrar TODAS las misiones? Esta acción no se puede deshacer.')) return;
         const res = await fetch(API, { method: 'DELETE' });
-        alert(res.ok ? '✅ Todas las misiones han sido eliminadas.' : `❌ Error al borrar. Código: ${res.status}`);
-        page = 0;
-        total = 0;
-        await getMisiones();
+        if (res.ok) {
+            setStatus('✅ Todas las misiones han sido eliminadas.');
+            page = 0;
+            total = 0;
+            await getMisiones();
+        } else {
+            setStatus(`❌ Error al borrar. Código: ${res.status}`, false);
+        }
     }
 
     async function deleteOne(country, id) {
-        if (!confirm(`¿Eliminar la misión ${id} (${country})?`)) return;
         const res = await fetch(`${API}/${encodeURIComponent(country)}/${id}`, { method: 'DELETE' });
         if (res.ok) {
-            alert(`✅ Misión ${id} eliminada correctamente.`);
+            setStatus(`✅ Misión ${id} eliminada correctamente.`);
             total = total - 1;
             if (misiones.length === 1 && page > 0) page = page - 1;
             await getMisiones();
         } else if (res.status === 404) {
-            alert(`❌ No existe una misión con ID ${id} en ${country}.`);
+            setStatus(`❌ No existe una misión con ID ${id} en ${country}.`, false);
         } else {
-            alert(`❌ No se pudo eliminar. Código: ${res.status}`);
+            setStatus(`❌ No se pudo eliminar. Código: ${res.status}`, false);
         }
     }
 
     async function createMision() {
         if (!newMissionId || !newCompany || !newLocation || !newYear || !newRocket || !newStatus || !newCountry) {
-            alert('❌ Todos los campos son obligatorios.');
+            setStatus('❌ Todos los campos son obligatorios.', false);
             return;
         }
 
@@ -108,23 +120,26 @@
         });
 
         if (res.status === 201) {
-            alert(`✅ Misión ${newMissionId} creada correctamente.`);
+            const createdId = newMissionId;
             newMissionId = ''; newCompany = ''; newLocation = ''; newYear = '';
             newRocket = ''; newStatus = ''; newCountry = '';
             total = total + 1;
+            // Navegar a la última página donde aparecerá el nuevo registro
+            page = Math.ceil(total / LIMIT) - 1;
             await getMisiones();
+            setStatus(`✅ Misión ${createdId} creada correctamente.`);
         } else if (res.status === 409) {
-            alert('❌ Ya existe una misión con ese ID.');
+            setStatus('❌ Ya existe una misión con ese ID.', false);
         } else if (res.status === 400) {
-            alert('❌ Datos incorrectos. Revisa que todos los campos sean válidos.');
+            setStatus('❌ Datos incorrectos. Revisa que todos los campos sean válidos.', false);
         } else {
-            alert(`❌ Error al crear la misión. Código: ${res.status}`);
+            setStatus(`❌ Error al crear la misión. Código: ${res.status}`, false);
         }
     }
 
     async function buscarFiltro() {
         if (!filterFrom && !filterTo) {
-            alert('❌ Introduce al menos un año para filtrar.');
+            setStatus('❌ Introduce al menos un año para filtrar.', false);
             return;
         }
         filterLoading = true;
@@ -138,7 +153,7 @@
             if (res.ok) {
                 filtered = await res.json();
             } else {
-                alert(`❌ Error al buscar. Código: ${res.status}`);
+                setStatus(`❌ Error al buscar. Código: ${res.status}`, false);
             }
         } catch (err) {
             console.error('Error de red:', err);
@@ -170,7 +185,11 @@
 <button onclick={loadInitialData}>Cargar datos iniciales</button>
 <button onclick={deleteAll}>Borrar todos</button>
 
-<br><br>
+{#if statusMsg}
+    <p style="color: {statusOk ? 'green' : 'red'}">{statusMsg}</p>
+{/if}
+
+<br>
 
 <!-- FILTRO POR RANGO DE AÑOS -->
 <h3>Filtrar por rango de años</h3>

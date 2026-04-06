@@ -6,16 +6,15 @@ test.describe('Tests e2e Space Launches', () => {
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
     await page.goto(BASE_URL);
-    page.getByRole('button', { name: /Cargar datos iniciales/i }).click();
-    await page.waitForLoadState('networkidle'); // Pequeña pausa para que Svelte actualice la vista
+    await page.getByRole('button', { name: /Cargar datos iniciales/i }).click();
+    await page.waitForTimeout(2000);
+    await page.close();
   });
 
   test('1. Debe listar recursos', async ({ page }) => {
     await page.goto(BASE_URL);
     await expect(page.locator('table').last()).toBeVisible();
   });
-
-
 
   test('3. Debe buscar recursos', async ({ page }) => {
     await page.goto(BASE_URL);
@@ -31,13 +30,11 @@ test.describe('Tests e2e Space Launches', () => {
   test('4. Debe editar un recurso', async ({ page }) => {
     await page.goto(BASE_URL);
 
-    page.on('dialog', dialog => dialog.accept());
-
     await page.getByRole('button', { name: 'Cargar datos iniciales' }).click();
-    await page.waitForLoadState('networkidle'); // Pequeña pausa para que Svelte actualice la vista
+    await page.waitForTimeout(2000);
 
     await page.getByRole('button', { name: 'Editar' }).first().click();
-    await page.waitForLoadState('networkidle'); // Pequeña pausa para que Svelte actualice la vista
+    await page.waitForLoadState('networkidle');
 
     await expect(page).toHaveURL(/.*\/space-launches\/edit\/.+\/.+/);
 
@@ -49,10 +46,8 @@ test.describe('Tests e2e Space Launches', () => {
   test('5. Debe borrar un recurso', async ({ page }) => {
     await page.goto(BASE_URL);
 
-    page.on('dialog', dialog => dialog.accept());
-
+    // Cargar datos y esperar a que la tabla se renderice con botones Eliminar
     await page.getByRole('button', { name: 'Cargar datos iniciales' }).click();
-
     const primerBotonEliminar = page.getByRole('button', { name: 'Eliminar' }).first();
     await expect(primerBotonEliminar).toBeVisible({ timeout: 10000 });
 
@@ -61,17 +56,17 @@ test.describe('Tests e2e Space Launches', () => {
 
     if (countBefore > 0) {
       await primerBotonEliminar.click();
-      await page.waitForLoadState('networkidle'); // Pequeña pausa para que Svelte actualice la vista
 
-      const countAfter = await todosLosBotonesEliminar.count();
-      expect(countAfter).toBeLessThan(countBefore);
+      // Esperar a que el DOM actualice: el conteo debe bajar
+      await expect(async () => {
+        const countAfter = await todosLosBotonesEliminar.count();
+        expect(countAfter).toBeLessThan(countBefore);
+      }).toPass({ timeout: 8000 });
     }
   });
 
   test('6. Debe borrar todos', async ({ page }) => {
     await page.goto(BASE_URL);
-
-    page.on('dialog', dialog => dialog.accept());
 
     await page.getByRole('button', { name: 'Cargar datos iniciales' }).click();
     await page.waitForTimeout(1000);
@@ -85,10 +80,9 @@ test.describe('Tests e2e Space Launches', () => {
   test('2. Debe crear un recurso', async ({ page }) => {
     await page.goto(BASE_URL);
 
-    page.on('dialog', dialog => dialog.accept());
-
-    // 👇 IMPORTANTE
     await page.getByRole('button', { name: 'Cargar datos iniciales' }).click();
+    // Esperar a que los datos carguen (botones Eliminar visibles = tabla lista)
+    await expect(page.getByRole('button', { name: 'Eliminar' }).first()).toBeVisible({ timeout: 10000 });
 
     const idUnico = Math.floor(Math.random() * 1000000).toString();
 
@@ -102,8 +96,11 @@ test.describe('Tests e2e Space Launches', () => {
 
     await page.getByRole('button', { name: 'Crear' }).click();
 
-    const filaCreada = page.getByText(idUnico);
-    await expect(filaCreada).toBeVisible({ timeout: 10000 });
+    // El .svelte navega a la última página donde está el nuevo registro.
+    // Esperar con toPass para que Playwright reintente hasta que aparezca.
+    await expect(async () => {
+      await expect(page.getByText(idUnico)).toBeVisible();
+    }).toPass({ timeout: 10000 });
   });
 
 });
