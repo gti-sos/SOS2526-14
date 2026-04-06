@@ -13,7 +13,6 @@ test.describe('Test layout', () => {
     await page.goto(`${APP_URL}${PAGE_PATH}`);
     await page.waitForLoadState('networkidle');
 
-    // Buscamos el <h2> exacto, no el h3 de "Listado (X meteoritos)"
     const title = page.locator('h2', { hasText: 'Meteoritos' });
     await expect(title).toBeVisible();
   });
@@ -79,7 +78,6 @@ test.describe('Tests de Creación de Recursos', () => {
     await page.goto(`${APP_URL}${PAGE_PATH}`);
     await page.waitForLoadState('networkidle');
 
-    // Aceptamos todos los dialogs (alert de éxito)
     page.on('dialog', dialog => dialog.accept());
 
     await page.getByPlaceholder('Spain').fill('TestCountry');
@@ -92,7 +90,6 @@ test.describe('Tests de Creación de Recursos', () => {
     await page.getByRole('button', { name: /crear/i }).click();
     await page.waitForTimeout(800);
 
-    // Usamos la ÚLTIMA tabla (listado), no la del formulario
     await expect(page.locator('table').last()).toContainText('TestMeteor');
   });
 
@@ -100,7 +97,6 @@ test.describe('Tests de Creación de Recursos', () => {
     await page.goto(`${APP_URL}${PAGE_PATH}`);
     await page.waitForLoadState('networkidle');
 
-    // Primera creación
     const dialog1Promise = page.waitForEvent('dialog');
     await page.getByPlaceholder('Spain').fill('DupeCountry');
     await page.getByPlaceholder('Nombre').fill('DupeMeteor');
@@ -112,7 +108,6 @@ test.describe('Tests de Creación de Recursos', () => {
     await (await dialog1Promise).accept();
     await page.waitForTimeout(500);
 
-    // Segunda creación → debe dar 409
     const dialog2Promise = page.waitForEvent('dialog');
     await page.getByPlaceholder('Spain').fill('DupeCountry');
     await page.getByPlaceholder('Nombre').fill('DupeMeteor');
@@ -130,7 +125,6 @@ test.describe('Tests de Creación de Recursos', () => {
     await page.goto(`${APP_URL}${PAGE_PATH}`);
     await page.waitForLoadState('networkidle');
 
-    // Registramos el handler ANTES del click para no perder el dialog
     let dialogMessage = '';
     page.on('dialog', async dialog => {
       dialogMessage = dialog.message();
@@ -138,7 +132,7 @@ test.describe('Tests de Creación de Recursos', () => {
     });
 
     await page.getByRole('button', { name: /crear/i }).click();
-    await page.waitForTimeout(1000); // damos tiempo al alert
+    await page.waitForTimeout(1000);
 
     expect(dialogMessage).toMatch(/obligatorios/i);
   });
@@ -197,7 +191,6 @@ test.describe('Tests de Listado de Recursos', () => {
     await page.goto(`${APP_URL}${PAGE_PATH}`);
     await page.waitForLoadState('networkidle');
 
-    // Solo contamos filas de la tabla del listado (última)
     const rows = page.locator('table').last().locator('tbody tr');
     const count = await rows.count();
     expect(count).toBeLessThanOrEqual(10);
@@ -207,7 +200,6 @@ test.describe('Tests de Listado de Recursos', () => {
     await page.goto(`${APP_URL}${PAGE_PATH}`);
     await page.waitForLoadState('networkidle');
 
-    // En el front el botón dice "Siguiente →"
     const nextBtn = page.getByRole('button', { name: /siguiente/i });
     await expect(nextBtn).toBeVisible();
 
@@ -222,7 +214,6 @@ test.describe('Tests de Listado de Recursos', () => {
     await page.goto(`${APP_URL}${PAGE_PATH}`);
     await page.waitForLoadState('networkidle');
 
-    // En el front el botón dice "← Anterior"
     const prevBtn = page.getByRole('button', { name: /anterior/i });
     await expect(prevBtn).toBeVisible();
     await expect(prevBtn).toBeDisabled();
@@ -241,7 +232,6 @@ test.describe('Test de borrado de colección', () => {
     const cargarBtn = page.getByRole('button', { name: /cargar datos iniciales/i });
     const borrarBtn = page.getByRole('button', { name: /borrar todos/i });
 
-    // Un handler que acepta todos los dialogs (confirm + alert)
     page.on('dialog', dialog => dialog.accept());
 
     if (await cargarBtn.isVisible()) {
@@ -253,8 +243,6 @@ test.describe('Test de borrado de colección', () => {
     await page.waitForTimeout(800);
     await page.waitForLoadState('networkidle');
 
-    // Tras borrar, el front muestra el mensaje "No hay meteoritos"
-    // (la tabla del formulario de creación siempre tiene 1 fila de inputs)
     await expect(page.getByText(/no hay meteoritos/i)).toBeVisible();
   });
 });
@@ -295,7 +283,6 @@ test.describe('Tests de Borrado de un Recurso', () => {
     const fila = page.locator('tr', { hasText: 'DeleteMe' });
     await expect(fila).toBeVisible();
 
-    // Un solo handler acepta tanto el confirm como el alert posterior
     page.on('dialog', dialog => dialog.accept());
 
     await fila.getByRole('button', { name: /eliminar/i }).click();
@@ -362,7 +349,6 @@ test.describe('Tests de Edición de Recursos', () => {
     await page.goto(`${APP_URL}${PAGE_PATH}/EditCountry/EditMeteor`);
     await page.waitForLoadState('networkidle');
 
-    // País(0) | Nombre(1) | ID(2) | Masa(3) | Año(4) | Geo(5)
     const inputMasa = page.locator('table tbody tr td').nth(3).locator('input');
     await expect(inputMasa).toBeVisible();
     await inputMasa.fill('9999');
@@ -381,7 +367,6 @@ test.describe('Tests de Edición de Recursos', () => {
     await page.goto(`${APP_URL}${PAGE_PATH}/EditCountry/EditMeteor`);
     await page.waitForLoadState('networkidle');
 
-    // Un handler acepta confirm + alert de éxito
     page.on('dialog', dialog => dialog.accept());
 
     await page.getByRole('button', { name: /eliminar recurso/i }).click();
@@ -471,7 +456,6 @@ test.describe('Tests de Filtrado por Rango de Años', () => {
     await page.getByPlaceholder(/desde/i).fill('');
     await page.getByPlaceholder(/hasta/i).fill('');
 
-    // Registramos el handler ANTES del click
     let dialogMessage = '';
     page.on('dialog', async dialog => {
       dialogMessage = dialog.message();
@@ -479,8 +463,115 @@ test.describe('Tests de Filtrado por Rango de Años', () => {
     });
 
     await page.getByRole('button', { name: /^buscar$/i }).click();
-    await page.waitForTimeout(1000); // damos tiempo al alert
+    await page.waitForTimeout(1000);
 
     expect(dialogMessage).toMatch(/al menos un año/i);
+  });
+});
+
+// ============================================================
+// BÚSQUEDA POR CAMPO
+// ============================================================
+test.describe('Tests de Búsqueda por Campo', () => {
+
+  // Creamos un meteorito conocido antes de todos los tests
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    page.on('dialog', dialog => dialog.accept());
+
+    await page.goto(`${APP_URL}${PAGE_PATH}`);
+    await page.waitForLoadState('networkidle');
+
+    const borrarBtn = page.getByRole('button', { name: /borrar todos/i });
+    if (await borrarBtn.isVisible()) {
+      await borrarBtn.click();
+      await page.waitForTimeout(500);
+    }
+
+    await page.getByPlaceholder('Spain').fill('SearchCountry');
+    await page.getByPlaceholder('Nombre').fill('SearchMeteor');
+    await page.getByPlaceholder('12345').fill('33333');
+    await page.getByPlaceholder('500').fill('750');
+    await page.getByPlaceholder('1990').fill('2003');
+    await page.getByPlaceholder('(40.4, -3.7)').fill('(7.0, 7.0)');
+    await page.getByRole('button', { name: /crear/i }).click();
+    await page.waitForTimeout(800);
+    await page.close();
+  });
+
+  test('Filtrar por nombre muestra solo los meteoritos coincidentes', async ({ page }) => {
+    await page.goto(`${APP_URL}${PAGE_PATH}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByPlaceholder('Filtrar por texto').fill('SearchMeteor');
+    await page.waitForTimeout(800);
+
+    const tabla = page.locator('table').last();
+    await expect(tabla).toContainText('SearchMeteor');
+
+    const rows = tabla.locator('tbody tr');
+    const count = await rows.count();
+    expect(count).toBeGreaterThan(0);
+  });
+
+  test('Filtrar por país muestra solo los meteoritos de ese país', async ({ page }) => {
+    await page.goto(`${APP_URL}${PAGE_PATH}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByPlaceholder('Filtrar país').fill('SearchCountry');
+    await page.waitForTimeout(800);
+
+    const tabla = page.locator('table').last();
+    await expect(tabla).toContainText('SearchCountry');
+
+    const rows = tabla.locator('tbody tr');
+    const count = await rows.count();
+    expect(count).toBeGreaterThan(0);
+  });
+
+  test('Filtrar por ID muestra el meteorito con ese ID', async ({ page }) => {
+    await page.goto(`${APP_URL}${PAGE_PATH}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByPlaceholder('Buscar ID').fill('33333');
+    await page.waitForTimeout(800);
+
+    const tabla = page.locator('table').last();
+    await expect(tabla).toContainText('33333');
+  });
+
+  test('Filtrar por masa muestra el meteorito con esa masa', async ({ page }) => {
+    await page.goto(`${APP_URL}${PAGE_PATH}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByPlaceholder('Buscar Masa').fill('750');
+    await page.waitForTimeout(800);
+
+    const tabla = page.locator('table').last();
+    await expect(tabla).toContainText('750');
+  });
+
+  test('Filtrar por año muestra el meteorito de ese año', async ({ page }) => {
+    await page.goto(`${APP_URL}${PAGE_PATH}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByPlaceholder('Buscar Año').fill('2003');
+    await page.waitForTimeout(800);
+
+    const tabla = page.locator('table').last();
+    await expect(tabla).toContainText('2003');
+  });
+
+  test('Un filtro sin coincidencias muestra la tabla vacía', async ({ page }) => {
+    await page.goto(`${APP_URL}${PAGE_PATH}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByPlaceholder('Filtrar por texto').fill('ZZZNOMATCH999');
+    await page.waitForTimeout(800);
+
+    // Sin resultados: o la tabla desaparece o no hay filas en el listado
+    const rows = page.locator('table').last().locator('tbody tr');
+    const count = await rows.count();
+    expect(count).toBe(0);
   });
 });

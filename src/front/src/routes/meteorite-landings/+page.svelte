@@ -56,18 +56,6 @@
 		}
 	}
 
-	function buscarPorCampos() {
-		page = 0;
-		getMeteorites();
-	}
-
-	function limpiarFiltrosCampos() {
-		filterName = ''; filterId = ''; filterMass = '';
-		filterYear = ''; filterGeolocation = ''; filterCountry = '';
-		page = 0;
-		getMeteorites();
-	}
-
 	async function getTotal() {
 		const res = await fetch(`${API}?limit=0`);
 		if (res.ok) {
@@ -100,9 +88,8 @@
 			method: 'DELETE'
 		});
 		if (res.ok) {
-			alert(`✅ Meteorito "${name}" eliminado correctamente.`);  // ← esto faltaba
+			alert(`✅ Meteorito "${name}" eliminado correctamente.`);
 			total = total - 1;
-			
 			if (meteorites.length === 1 && page > 0) page = page - 1;
 			await getMeteorites();
 		} else {
@@ -131,7 +118,6 @@
 
 		if (res.status === 201) {
 			alert(`✅ Meteorito "${newName}" creado.`);
-			// Limpiamos el formulario
 			newName = ''; newId = ''; newMass = ''; newYear = ''; newGeolocation = ''; newCountry = '';
 			total = total + 1;
 			await getMeteorites();
@@ -162,7 +148,7 @@
 	}
 
 	function goToPage(newPage) {
-		page = newPage; // el $effect se encarga del resto
+		page = newPage;
 	}
 
 	$effect(() => {
@@ -180,26 +166,22 @@
 
 <h3>Buscar por campo</h3>
 <table border="1" cellpadding="6">
-    <thead>
-        <tr>
-            <th>País</th><th>Nombre</th><th>ID</th>
-            <th>Masa (g)</th><th>Año</th><th>Geolocalización</th><th></th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td><input type="text"   bind:value={filterCountry}     placeholder="España" /></td>
-            <td><input type="text"   bind:value={filterName}        placeholder="Nombre" /></td>
-            <td><input type="number" bind:value={filterId}          placeholder="ID" /></td>
-            <td><input type="number" bind:value={filterMass}        placeholder="Masa" /></td>
-            <td><input type="number" bind:value={filterYear}        placeholder="Año" /></td>
-            <td><input type="text"   bind:value={filterGeolocation} placeholder="Geo" /></td>
-            <td>
-                <button onclick={buscarPorCampos}>Buscar</button>
-                <button onclick={limpiarFiltrosCampos}>Limpiar</button>
-            </td>
-        </tr>
-    </tbody>
+	<thead>
+		<tr>
+			<th>País</th><th>Nombre</th><th>ID</th>
+			<th>Masa (g)</th><th>Año</th><th>Geolocalización</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><input type="text"   bind:value={filterCountry}     placeholder="Filtrar país" /></td>
+			<td><input type="text"   bind:value={filterName}        placeholder="Filtrar por texto" /></td>
+			<td><input type="number" bind:value={filterId}          placeholder="Buscar ID" /></td>
+			<td><input type="number" bind:value={filterMass}        placeholder="Buscar Masa" /></td>
+			<td><input type="number" bind:value={filterYear}        placeholder="Buscar Año" /></td>
+			<td><input type="text"   bind:value={filterGeolocation} placeholder="Buscar Geo" /></td>
+		</tr>
+	</tbody>
 </table>
 
 <!-- FILTRO POR AÑOS -->
@@ -210,27 +192,27 @@
 <button onclick={() => { filterFrom = ''; filterTo = ''; filtered = []; }}>Limpiar</button>
 
 {#if filterLoading}
-    <p>Cargando...</p>
+	<p>Cargando...</p>
 {:else if filtered.length > 0}
-    <p>{filtered.length} meteoritos encontrados</p>
-    <table border="1" cellpadding="8" cellspacing="0">
-        <thead>
-            <tr>
-                <th>País</th><th>Nombre</th><th>ID</th>
-                <th>Masa (g)</th><th>Año</th><th>Geolocalización</th>
-            </tr>
-        </thead>
-        <tbody>
-            {#each filtered as m}
-                <tr>
-                    <td>{m.country}</td><td>{m.name}</td><td>{m.id}</td>
-                    <td>{m.mass}</td><td>{m.year}</td><td>{m.geolocation}</td>
-                </tr>
-            {/each}
-        </tbody>
-    </table>
+	<p>{filtered.length} meteoritos encontrados</p>
+	<table border="1" cellpadding="8" cellspacing="0">
+		<thead>
+			<tr>
+				<th>País</th><th>Nombre</th><th>ID</th>
+				<th>Masa (g)</th><th>Año</th><th>Geolocalización</th>
+			</tr>
+		</thead>
+		<tbody>
+			{#each filtered as m}
+				<tr>
+					<td>{m.country}</td><td>{m.name}</td><td>{m.id}</td>
+					<td>{m.mass}</td><td>{m.year}</td><td>{m.geolocation}</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
 {:else if filtered.length === 0 && (filterFrom || filterTo)}
-    <p>No se encontraron meteoritos en ese rango.</p>
+	<p>No se encontraron meteoritos en ese rango.</p>
 {/if}
 
 <!-- FORMULARIO DE CREACIÓN -->
@@ -249,12 +231,12 @@
 	</thead>
 	<tbody>
 		<tr>
-			<td><input type="text" bind:value={newCountry} placeholder="Spain" /></td>
-			<td><input type="text" bind:value={newName} placeholder="Nombre" /></td>
-			<td><input type="number" bind:value={newId} placeholder="12345" /></td>
-			<td><input type="number" bind:value={newMass} placeholder="500" /></td>
-			<td><input type="number" bind:value={newYear} placeholder="1990" /></td>
-			<td><input type="text" bind:value={newGeolocation} placeholder="(40.4, -3.7)" /></td>
+			<td><input type="text"   bind:value={newCountry}     placeholder="Spain" /></td>
+			<td><input type="text"   bind:value={newName}        placeholder="Nombre" /></td>
+			<td><input type="number" bind:value={newId}          placeholder="12345" /></td>
+			<td><input type="number" bind:value={newMass}        placeholder="500" /></td>
+			<td><input type="number" bind:value={newYear}        placeholder="1990" /></td>
+			<td><input type="text"   bind:value={newGeolocation} placeholder="(40.4, -3.7)" /></td>
 			<td><button onclick={createMeteorite}>Crear</button></td>
 		</tr>
 	</tbody>
