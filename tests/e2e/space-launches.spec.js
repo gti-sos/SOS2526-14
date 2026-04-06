@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = 'http://localhost:5173/space-launches';
+const BASE_URL = 'http://localhost:10000/space-launches';
 
 test.describe('Tests e2e Space Launches', () => {
   test.beforeAll(async ({ browser }) => {
