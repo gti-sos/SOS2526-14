@@ -161,6 +161,7 @@
 
 <button onclick={loadInitialData}>Cargar datos iniciales</button>
 <button onclick={deleteAll}>Borrar todos</button>
+<button onclick={() => goto('/meteorite-landings/graph')}>Ver gráfica</button>
 
 <br><br>
 
