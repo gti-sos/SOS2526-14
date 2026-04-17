@@ -4,7 +4,10 @@ const csv = require('csvtojson');
 const path = require("path");
 
 // En meteorite-landings.js (v1)
-const meteorite_csv = path.join(__dirname, "../../data/meteorite-landings/meteorite-landings-with-country.csv");
+//Normalización de los nombres de los países
+//node src/back/utils/normalize-countries.js src/back/data/meteorite-landings/meteorite-landings.csv country
+
+const meteorite_csv = path.join(__dirname, "../../data/meteorite-landings/meteorite-landings-normalized.csv");
 const db = require('../../data/meteorite-landings/meteorite-data.js');
 
 // Nos quedamos solo con los datos que aportan valor real a la API

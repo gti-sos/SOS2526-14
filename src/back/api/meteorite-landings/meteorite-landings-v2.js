@@ -4,7 +4,7 @@ const csv = require('csvtojson');
 const path = require("path");
 
 // En meteorite-landings-v2.js (v2)
-const meteorite_csv = path.join(__dirname, "../../data/meteorite-landings/meteorite-landings-with-country.csv");
+const meteorite_csv = path.join(__dirname, "../../data/meteorite-landings/meteorite-landings-normalized.csv");
 const db = require('../../data/meteorite-landings/meteorite-data.js');
 
 // Nos quedamos solo con los datos que aportan valor real a la API
