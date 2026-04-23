@@ -10,10 +10,12 @@
         const res = await fetch('/api/v1/active-satellites');
         satelliteData = await res.json();
 
-        const counts = {};
-        satelliteData.forEach(s => {
-            counts[s.country] = (counts[s.country] || 0) + 1;
-        });
+        let counts = {};
+        satelliteData.forEach((s) => {
+           if (s.country) {
+                 counts[s.country] = (counts[s.country] || 0) + 1;
+                 }
+                         });
 
         const categories = Object.keys(counts);
         const dataValues = Object.values(counts);
@@ -35,5 +37,5 @@
 <main>
     <h1>Visualización Individual: Active Satellites</h1>
     <div id="container"></div>
-    <a href="/analytics">Volver a Analytics Grupal</a>
+   
 </main>
