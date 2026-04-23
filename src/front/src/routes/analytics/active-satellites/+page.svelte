@@ -4,6 +4,7 @@
 
     /** @type {any[]} */
     let satelliteData = []; 
+    let chartContainer; // Esta variable guardará la referencia al DIV
 
     onMount(async () => {
         const res = await fetch('/api/v1/active-satellites');
@@ -12,7 +13,6 @@
 
             /** @type {Record<string, number>} */
             let counts = {};
-            
             satelliteData.forEach((s) => {
                 if (s.country) {
                     counts[s.country] = (counts[s.country] || 0) + 1;
@@ -22,7 +22,8 @@
             const categories = Object.keys(counts);
             const dataValues = Object.values(counts);
 
-            Highcharts.chart('container', {
+            // USAMOS chartContainer EN LUGAR DEL ID 'container'
+            Highcharts.chart(chartContainer, {
                 chart: { type: 'bar' },
                 title: { text: 'Satélites Activos por País' },
                 xAxis: { categories: categories, title: { text: 'País' } },
@@ -36,3 +37,9 @@
         }
     });
 </script>
+
+<main>
+    <h1>Visualización Individual: Active Satellites</h1>
+    <div bind:this={chartContainer}></div>
+    <p><a href="/analytics">Volver a Analytics Grupal</a></p>
+</main>
