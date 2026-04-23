@@ -19,4 +19,4 @@
 - **APIs v2**:
   - (developed by Jaime García Algarra)
   - http://sos2526-14.onrender.com/api/v2/meteorite-landings/docs (developed by Jeremías J. Pluas Charcopa)
-  - http://sos2526-14.onrender.com/api/v2/space-launches/docs(developed by Fernando Reguera Bueno)
+  - http://sos2526-14.onrender.com/api/v2/space-launches/docs (developed by Fernando Reguera Bueno)
