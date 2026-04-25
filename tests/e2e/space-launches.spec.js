@@ -20,7 +20,10 @@ test.describe('Tests e2e Space Launches', () => {
     await page.goto(BASE_URL);
 
     await page.getByPlaceholder('Desde (ej: 2000)').fill('2000');
-    await page.getByRole('button', { name: 'Buscar' }).click();
+
+    // FIX: ahora hay dos botones "Buscar" en la página (uno por cada sección).
+    // El de rango de años es el segundo (nth(1)).
+    await page.getByRole('button', { name: 'Buscar' }).nth(1).click();
 
     await page.waitForTimeout(1000);
 
@@ -44,17 +47,16 @@ test.describe('Tests e2e Space Launches', () => {
   });
 
   test('5. Debe borrar un recurso', async ({ page }) => {
-  await page.goto(BASE_URL);
+    await page.goto(BASE_URL);
 
-  await page.getByRole('button', { name: 'Cargar datos iniciales' }).click();
-  const primerBotonEliminar = page.getByRole('button', { name: 'Eliminar' }).first();
-  await expect(primerBotonEliminar).toBeVisible({ timeout: 10000 });
+    await page.getByRole('button', { name: 'Cargar datos iniciales' }).click();
+    const primerBotonEliminar = page.getByRole('button', { name: 'Eliminar' }).first();
+    await expect(primerBotonEliminar).toBeVisible({ timeout: 10000 });
 
-  await primerBotonEliminar.click();
+    await primerBotonEliminar.click();
 
-  // Verificar el mensaje de éxito que muestra el componente Svelte
-  await expect(page.locator('p').filter({ hasText: /✅ Misión .+ eliminada correctamente/ }))
-    .toBeVisible({ timeout: 8000 });
+    await expect(page.locator('p').filter({ hasText: /✅ Misión .+ eliminada correctamente/ }))
+      .toBeVisible({ timeout: 8000 });
   });
 
   test('6. Debe borrar todos', async ({ page }) => {
@@ -73,12 +75,13 @@ test.describe('Tests e2e Space Launches', () => {
     await page.goto(BASE_URL);
 
     await page.getByRole('button', { name: 'Cargar datos iniciales' }).click();
-    // Esperar a que los datos carguen (botones Eliminar visibles = tabla lista)
     await expect(page.getByRole('button', { name: 'Eliminar' }).first()).toBeVisible({ timeout: 10000 });
 
     const idUnico = Math.floor(Math.random() * 1000000).toString();
 
-    await page.getByPlaceholder('1001').fill(idUnico);
+    // FIX: usar { exact: true } para distinguir placeholder="1001" (crear)
+    // de placeholder="Ej: 1001" (buscar), que también está en la página.
+    await page.getByPlaceholder('1001', { exact: true }).fill(idUnico);
     await page.getByPlaceholder('SpaceX').fill('Empresa E2E');
     await page.getByPlaceholder('Cape Canaveral').fill('Sevilla');
     await page.getByPlaceholder('2024').fill('2025');
@@ -88,8 +91,6 @@ test.describe('Tests e2e Space Launches', () => {
 
     await page.getByRole('button', { name: 'Crear' }).click();
 
-    // El .svelte navega a la última página donde está el nuevo registro.
-    // Esperar con toPass para que Playwright reintente hasta que aparezca.
     await expect(async () => {
       await expect(page.getByText(idUnico)).toBeVisible();
     }).toPass({ timeout: 10000 });
