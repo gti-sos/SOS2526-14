@@ -19,13 +19,26 @@
     let newStatus = $state('');
     let newCountry = $state('');
 
+    // Filtro por rango de años (estadísticas)
     let filterFrom = $state('');
     let filterTo = $state('');
     let filtered = $state([]);
     let filterLoading = $state(false);
     let filterUsed = $state(false);
 
-    // Mensaje de estado reactivo — reemplaza todos los alert() y confirm()
+    // Búsqueda por parámetros
+    let searchId = $state('');
+    let searchCompany = $state('');
+    let searchLocation = $state('');
+    let searchYear = $state('');
+    let searchRocket = $state('');
+    let searchStatus = $state('');
+    let searchCountry = $state('');
+    let searchResults = $state([]);
+    let searchLoading = $state(false);
+    let searchUsed = $state(false);
+
+    // Mensaje de estado reactivo
     let statusMsg = $state('');
     let statusOk = $state(true);
 
@@ -124,7 +137,6 @@
             newMissionId = ''; newCompany = ''; newLocation = ''; newYear = '';
             newRocket = ''; newStatus = ''; newCountry = '';
             total = total + 1;
-            // Navegar a la última página donde aparecerá el nuevo registro
             page = Math.ceil(total / LIMIT) - 1;
             await getMisiones();
             setStatus(`✅ Misión ${createdId} creada correctamente.`);
@@ -169,6 +181,50 @@
         filterUsed = false;
     }
 
+    // ── NUEVA FUNCIÓN: búsqueda por parámetros ──────────────────────────────
+    async function buscarPorParametros() {
+        const hayAlgunCampo = searchId || searchCompany || searchLocation ||
+                              searchYear || searchRocket || searchStatus || searchCountry;
+        if (!hayAlgunCampo) {
+            setStatus('❌ Rellena al menos un campo para buscar.', false);
+            return;
+        }
+
+        searchLoading = true;
+        searchUsed = true;
+
+        // Construir query string solo con los campos que tienen valor
+        const params = new URLSearchParams();
+        if (searchId)       params.append('mission_id',     searchId);
+        if (searchCompany)  params.append('company_name',   searchCompany);
+        if (searchLocation) params.append('location',       searchLocation);
+        if (searchYear)     params.append('year',           searchYear);
+        if (searchRocket)   params.append('rocket_name',    searchRocket);
+        if (searchStatus)   params.append('mission_status', searchStatus);
+        if (searchCountry)  params.append('country',        searchCountry);
+
+        try {
+            const res = await fetch(`${API}?${params.toString()}`);
+            if (res.ok) {
+                searchResults = await res.json();
+            } else {
+                setStatus(`❌ Error al buscar. Código: ${res.status}`, false);
+            }
+        } catch (err) {
+            console.error('Error de red:', err);
+        } finally {
+            searchLoading = false;
+        }
+    }
+
+    function limpiarBusqueda() {
+        searchId = ''; searchCompany = ''; searchLocation = '';
+        searchYear = ''; searchRocket = ''; searchStatus = ''; searchCountry = '';
+        searchResults = [];
+        searchUsed = false;
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
     async function goToPage(newPage) {
         page = newPage;
         await getMisiones();
@@ -191,7 +247,83 @@
 
 <br>
 
-<!-- FILTRO POR RANGO DE AÑOS -->
+<!-- ── BÚSQUEDA POR PARÁMETROS (NUEVO) ─────────────────────────────────── -->
+<h3>Buscar por parámetros</h3>
+<table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Empresa</th>
+            <th>Ubicación</th>
+            <th>Año</th>
+            <th>Cohete</th>
+            <th>Estado</th>
+            <th>País</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><input type="number" bind:value={searchId}       placeholder="Ej: 1001" /></td>
+            <td><input type="text"   bind:value={searchCompany}  placeholder="Ej: SpaceX" /></td>
+            <td><input type="text"   bind:value={searchLocation} placeholder="Ej: Cape Canaveral" /></td>
+            <td><input type="number" bind:value={searchYear}     placeholder="Ej: 2020" /></td>
+            <td><input type="text"   bind:value={searchRocket}   placeholder="Ej: Falcon 9" /></td>
+            <td>
+                <select bind:value={searchStatus}>
+                    <option value="">-- Todos --</option>
+                    <option value="Success">Éxito</option>
+                    <option value="Failure">Fallo</option>
+                    <option value="Partial Failure">Fallo Parcial</option>
+                    <option value="Prelaunch Failure">Fallo Prelanzamiento</option>
+                </select>
+            </td>
+            <td><input type="text" bind:value={searchCountry} placeholder="Ej: USA" /></td>
+            <td>
+                <button onclick={buscarPorParametros}>Buscar</button>
+                <button onclick={limpiarBusqueda}>Limpiar</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+{#if searchLoading}
+    <p>Buscando...</p>
+{:else if searchUsed && searchResults.length === 0}
+    <p>No se encontraron misiones con esos criterios.</p>
+{:else if searchResults.length > 0}
+    <p>{searchResults.length} misiones encontradas</p>
+    <table border="1" cellpadding="8" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Empresa</th>
+                <th>Cohete</th>
+                <th>Ubicación</th>
+                <th>Año</th>
+                <th>País</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {#each searchResults as m}
+                <tr>
+                    <td>{m.mission_id}</td>
+                    <td>{m.company_name}</td>
+                    <td>{m.rocket_name}</td>
+                    <td>{m.location}</td>
+                    <td>{m.year}</td>
+                    <td>{m.country}</td>
+                    <td>{m.mission_status}</td>
+                </tr>
+            {/each}
+        </tbody>
+    </table>
+{/if}
+
+<br>
+
+<!-- ── FILTRO POR RANGO DE AÑOS ─────────────────────────────────────────── -->
 <h3>Filtrar por rango de años</h3>
 <input type="number" bind:value={filterFrom} placeholder="Desde (ej: 2000)" />
 <input type="number" bind:value={filterTo} placeholder="Hasta (ej: 2020)" />
@@ -234,7 +366,7 @@
 
 <br>
 
-<!-- FORMULARIO DE CREACIÓN -->
+<!-- ── FORMULARIO DE CREACIÓN ────────────────────────────────────────────── -->
 <h3>Crear nueva misión</h3>
 <table border="1" cellpadding="8" cellspacing="0">
     <thead>
@@ -273,7 +405,7 @@
 
 <br>
 
-<!-- LISTADO -->
+<!-- ── LISTADO ───────────────────────────────────────────────────────────── -->
 <h3>Listado ({total} misiones)</h3>
 
 {#if loading}
