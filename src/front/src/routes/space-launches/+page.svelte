@@ -19,14 +19,12 @@
     let newStatus = $state('');
     let newCountry = $state('');
 
-    // Filtro por rango de años (estadísticas)
     let filterFrom = $state('');
     let filterTo = $state('');
     let filtered = $state([]);
     let filterLoading = $state(false);
     let filterUsed = $state(false);
 
-    // Búsqueda por parámetros
     let searchId = $state('');
     let searchCompany = $state('');
     let searchLocation = $state('');
@@ -38,7 +36,6 @@
     let searchLoading = $state(false);
     let searchUsed = $state(false);
 
-    // Mensaje de estado reactivo
     let statusMsg = $state('');
     let statusOk = $state(true);
 
@@ -117,7 +114,6 @@
             setStatus('❌ Todos los campos son obligatorios.', false);
             return;
         }
-
         const res = await fetch(API, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -131,7 +127,6 @@
                 country: newCountry
             })
         });
-
         if (res.status === 201) {
             const createdId = newMissionId;
             newMissionId = ''; newCompany = ''; newLocation = ''; newYear = '';
@@ -175,13 +170,9 @@
     }
 
     function limpiarFiltro() {
-        filterFrom = '';
-        filterTo = '';
-        filtered = [];
-        filterUsed = false;
+        filterFrom = ''; filterTo = ''; filtered = []; filterUsed = false;
     }
 
-    // ── NUEVA FUNCIÓN: búsqueda por parámetros ──────────────────────────────
     async function buscarPorParametros() {
         const hayAlgunCampo = searchId || searchCompany || searchLocation ||
                               searchYear || searchRocket || searchStatus || searchCountry;
@@ -189,11 +180,8 @@
             setStatus('❌ Rellena al menos un campo para buscar.', false);
             return;
         }
-
         searchLoading = true;
         searchUsed = true;
-
-        // Construir query string solo con los campos que tienen valor
         const params = new URLSearchParams();
         if (searchId)       params.append('mission_id',     searchId);
         if (searchCompany)  params.append('company_name',   searchCompany);
@@ -202,7 +190,6 @@
         if (searchRocket)   params.append('rocket_name',    searchRocket);
         if (searchStatus)   params.append('mission_status', searchStatus);
         if (searchCountry)  params.append('country',        searchCountry);
-
         try {
             const res = await fetch(`${API}?${params.toString()}`);
             if (res.ok) {
@@ -220,10 +207,8 @@
     function limpiarBusqueda() {
         searchId = ''; searchCompany = ''; searchLocation = '';
         searchYear = ''; searchRocket = ''; searchStatus = ''; searchCountry = '';
-        searchResults = [];
-        searchUsed = false;
+        searchResults = []; searchUsed = false;
     }
-    // ────────────────────────────────────────────────────────────────────────
 
     async function goToPage(newPage) {
         page = newPage;
@@ -247,19 +232,13 @@
 
 <br>
 
-<!-- ── BÚSQUEDA POR PARÁMETROS (NUEVO) ─────────────────────────────────── -->
+<!-- ── BÚSQUEDA POR PARÁMETROS ───────────────────────────────────────────── -->
 <h3>Buscar por parámetros</h3>
 <table border="1" cellpadding="8" cellspacing="0">
     <thead>
         <tr>
-            <th>ID</th>
-            <th>Empresa</th>
-            <th>Ubicación</th>
-            <th>Año</th>
-            <th>Cohete</th>
-            <th>Estado</th>
-            <th>País</th>
-            <th></th>
+            <th>ID</th><th>Empresa</th><th>Ubicación</th><th>Año</th>
+            <th>Cohete</th><th>Estado</th><th>País</th><th></th>
         </tr>
     </thead>
     <tbody>
@@ -296,25 +275,15 @@
     <table border="1" cellpadding="8" cellspacing="0">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Empresa</th>
-                <th>Cohete</th>
-                <th>Ubicación</th>
-                <th>Año</th>
-                <th>País</th>
-                <th>Estado</th>
+                <th>ID</th><th>Empresa</th><th>Cohete</th>
+                <th>Ubicación</th><th>Año</th><th>País</th><th>Estado</th>
             </tr>
         </thead>
         <tbody>
             {#each searchResults as m}
                 <tr>
-                    <td>{m.mission_id}</td>
-                    <td>{m.company_name}</td>
-                    <td>{m.rocket_name}</td>
-                    <td>{m.location}</td>
-                    <td>{m.year}</td>
-                    <td>{m.country}</td>
-                    <td>{m.mission_status}</td>
+                    <td>{m.mission_id}</td><td>{m.company_name}</td><td>{m.rocket_name}</td>
+                    <td>{m.location}</td><td>{m.year}</td><td>{m.country}</td><td>{m.mission_status}</td>
                 </tr>
             {/each}
         </tbody>
@@ -326,8 +295,8 @@
 <!-- ── FILTRO POR RANGO DE AÑOS ─────────────────────────────────────────── -->
 <h3>Filtrar por rango de años</h3>
 <input type="number" bind:value={filterFrom} placeholder="Desde (ej: 2000)" />
-<input type="number" bind:value={filterTo} placeholder="Hasta (ej: 2020)" />
-<button onclick={buscarFiltro}>Buscar</button>
+<input type="number" bind:value={filterTo}   placeholder="Hasta (ej: 2020)" />
+<button onclick={buscarFiltro}>Filtrar</button>
 <button onclick={limpiarFiltro}>Limpiar</button>
 
 {#if filterLoading}
@@ -339,25 +308,15 @@
     <table border="1" cellpadding="8" cellspacing="0">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Empresa</th>
-                <th>Cohete</th>
-                <th>Ubicación</th>
-                <th>Año</th>
-                <th>País</th>
-                <th>Estado</th>
+                <th>ID</th><th>Empresa</th><th>Cohete</th>
+                <th>Ubicación</th><th>Año</th><th>País</th><th>Estado</th>
             </tr>
         </thead>
         <tbody>
             {#each filtered as m}
                 <tr>
-                    <td>{m.mission_id}</td>
-                    <td>{m.company_name}</td>
-                    <td>{m.rocket_name}</td>
-                    <td>{m.location}</td>
-                    <td>{m.year}</td>
-                    <td>{m.country}</td>
-                    <td>{m.mission_status}</td>
+                    <td>{m.mission_id}</td><td>{m.company_name}</td><td>{m.rocket_name}</td>
+                    <td>{m.location}</td><td>{m.year}</td><td>{m.country}</td><td>{m.mission_status}</td>
                 </tr>
             {/each}
         </tbody>
@@ -371,23 +330,17 @@
 <table border="1" cellpadding="8" cellspacing="0">
     <thead>
         <tr>
-            <th>ID</th>
-            <th>Empresa</th>
-            <th>Ubicación</th>
-            <th>Año</th>
-            <th>Cohete</th>
-            <th>Estado</th>
-            <th>País</th>
-            <th></th>
+            <th>ID</th><th>Empresa</th><th>Ubicación</th><th>Año</th>
+            <th>Cohete</th><th>Estado</th><th>País</th><th></th>
         </tr>
     </thead>
     <tbody>
         <tr>
             <td><input type="number" bind:value={newMissionId} placeholder="1001" /></td>
-            <td><input type="text" bind:value={newCompany} placeholder="SpaceX" /></td>
-            <td><input type="text" bind:value={newLocation} placeholder="Cape Canaveral" /></td>
-            <td><input type="number" bind:value={newYear} placeholder="2024" /></td>
-            <td><input type="text" bind:value={newRocket} placeholder="Falcon 9" /></td>
+            <td><input type="text"   bind:value={newCompany}   placeholder="SpaceX" /></td>
+            <td><input type="text"   bind:value={newLocation}  placeholder="Cape Canaveral" /></td>
+            <td><input type="number" bind:value={newYear}      placeholder="2024" /></td>
+            <td><input type="text"   bind:value={newRocket}    placeholder="Falcon 9" /></td>
             <td>
                 <select bind:value={newStatus}>
                     <option value="">-- Estado --</option>
@@ -416,14 +369,8 @@
     <table border="1" cellpadding="8" cellspacing="0">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Empresa</th>
-                <th>Cohete</th>
-                <th>Ubicación</th>
-                <th>Año</th>
-                <th>País</th>
-                <th>Estado</th>
-                <th>Acciones</th>
+                <th>ID</th><th>Empresa</th><th>Cohete</th><th>Ubicación</th>
+                <th>Año</th><th>País</th><th>Estado</th><th>Acciones</th>
             </tr>
         </thead>
         <tbody>

@@ -20,10 +20,7 @@ test.describe('Tests e2e Space Launches', () => {
     await page.goto(BASE_URL);
 
     await page.getByPlaceholder('Desde (ej: 2000)').fill('2000');
-
-    // FIX: ahora hay dos botones "Buscar" en la página (uno por cada sección).
-    // El de rango de años es el segundo (nth(1)).
-    await page.getByRole('button', { name: 'Buscar' }).nth(1).click();
+    await page.getByRole('button', { name: 'Filtrar' }).click();
 
     await page.waitForTimeout(1000);
 
@@ -79,15 +76,18 @@ test.describe('Tests e2e Space Launches', () => {
 
     const idUnico = Math.floor(Math.random() * 1000000).toString();
 
-    // FIX: usar { exact: true } para distinguir placeholder="1001" (crear)
-    // de placeholder="Ej: 1001" (buscar), que también está en la página.
-    await page.getByPlaceholder('1001', { exact: true }).fill(idUnico);
-    await page.getByPlaceholder('SpaceX').fill('Empresa E2E');
-    await page.getByPlaceholder('Cape Canaveral').fill('Sevilla');
-    await page.getByPlaceholder('2024').fill('2025');
-    await page.getByPlaceholder('Falcon 9').fill('Cohete E2E');
-    await page.locator('select').selectOption('Success');
-    await page.getByPlaceholder('USA').fill('España');
+    // exact: true para no coincidir con los "Ej: X" del buscador por parámetros
+    await page.getByPlaceholder('1001',           { exact: true }).fill(idUnico);
+    await page.getByPlaceholder('SpaceX',         { exact: true }).fill('Empresa E2E');
+    await page.getByPlaceholder('Cape Canaveral', { exact: true }).fill('Sevilla');
+    await page.getByPlaceholder('2024',           { exact: true }).fill('2025');
+    await page.getByPlaceholder('Falcon 9',       { exact: true }).fill('Cohete E2E');
+
+    // nth(1): el primer select es el del buscador (-- Todos --),
+    // el segundo es el del formulario de crear (-- Estado --)
+    await page.locator('select').nth(1).selectOption('Success');
+
+    await page.getByPlaceholder('USA', { exact: true }).fill('España');
 
     await page.getByRole('button', { name: 'Crear' }).click();
 
