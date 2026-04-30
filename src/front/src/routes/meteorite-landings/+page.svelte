@@ -163,6 +163,7 @@
 <button onclick={deleteAll}>Borrar todos</button>
 <button onclick={() => goto('../analytics/meteorite-landings')}>Ver gráfica</button>
 <button onclick={() => goto('../analytics/meteorite-landings/map')}>Ver globo terráqueo</button>
+<button onclick={() => goto('../integrations/meteorite-landings')}>Ver integración</button>
 
 
 <br><br>
