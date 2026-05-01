@@ -141,6 +141,31 @@ router.get("/statistics", (req, res) => {
     });
 });
 
+// ==========================================
+// PROXY PARA LA API DE RICK Y MORTY (¡A prueba de fallos!)
+// ==========================================
+router.get('/proxy/personajes', async (req, res) => { 
+    try {
+        // Llamamos a la API de Rick & Morty (Certificado SSL siempre al día)
+        const response = await fetch('https://rickandmortyapi.com/api/character');
+        
+        if (!response.ok) {
+            return res.status(response.status).send("Error en la API externa");
+        }
+
+        const data = await response.json();
+        
+        // La API devuelve los personajes dentro de un array llamado "results"
+        // Vamos a coger solo los 10 primeros para que no sea una tabla gigante
+        const personajes = data.results.slice(0, 10);
+        res.json(personajes);
+
+    } catch (error) {
+        console.error("Error en el proxy:", error);
+        res.status(500).json({ error: "Error interno del servidor al usar el proxy" });
+    }
+});
+
 /* ============================================================
     3. RECURSO ÚNICO (Identificador Compuesto: /:country/:name)
 ============================================================ */
@@ -213,7 +238,6 @@ router.delete("/:country/:name", (req, res) => {
 ============================================================ */
 router.post("/:country/:name", (req, res) => res.status(405).json({ error: "Método no permitido." }));
 router.put("/", (req, res) => res.status(405).json({ error: "Método no permitido." }));
-
 
 
 

@@ -165,6 +165,10 @@
 <button onclick={() => goto('../analytics/meteorite-landings/map')}>Ver globo terráqueo</button>
 <button onclick={() => goto('../integrations/meteorite-landings/deaths-by-risk-factors')}>Ver integración 1</button>
 <button onclick={() => goto('../integrations/meteorite-landings/national-team-rankings-per-years')}>Ver integración 2</button>
+<button onclick={() => goto('../integrations/meteorite-landings/spacex')}>Ver Uso 1</button>
+<button onclick={() => goto('../integrations/meteorite-landings/weather')}>Ver Uso 2</button>
+<button onclick={() => goto('../integrations/meteorite-landings/personajes')}>Ver Uso 3</button>
+
 
 
 
