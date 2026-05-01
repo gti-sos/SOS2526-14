@@ -163,7 +163,9 @@
 <button onclick={deleteAll}>Borrar todos</button>
 <button onclick={() => goto('../analytics/meteorite-landings')}>Ver gráfica</button>
 <button onclick={() => goto('../analytics/meteorite-landings/map')}>Ver globo terráqueo</button>
-<button onclick={() => goto('../integrations/meteorite-landings')}>Ver integración</button>
+<button onclick={() => goto('../integrations/meteorite-landings/deaths-by-risk-factors')}>Ver integración 1</button>
+<button onclick={() => goto('../integrations/meteorite-landings/national-team-rankings-per-years')}>Ver integración 2</button>
+
 
 
 <br><br>
