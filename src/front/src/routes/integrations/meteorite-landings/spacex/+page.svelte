@@ -1,5 +1,5 @@
 <script>
-	// @ts-nocheck
+	// @ts-nochecknpm
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 
