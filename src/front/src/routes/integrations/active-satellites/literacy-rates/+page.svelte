@@ -7,7 +7,7 @@
     let literacyData = [];
 
     onMount(async () => {
-        // 1. Obtener  datos
+        // 1. Obtener datos
         const resSat = await fetch('/api/v1/active-satellites');
         satelliteData = await resSat.json();
 
@@ -15,7 +15,6 @@
         const resLit = await fetch('https://sos2526-11.onrender.com/api/v2/literacy-rates');
         literacyData = await resLit.json();
 
-       
         // Buscamos cuántos satélites tiene cada país que aparece en la lista de alfabetización
         const points = literacyData.map(lit => {
             const numSatellites = satelliteData.filter(sat => sat.country === lit.country).length;
@@ -64,33 +63,18 @@
     <div class="canvas-container">
         <canvas bind:this={chartCanvas}></canvas>
     </div>
-
-    <hr>
-    
-    <h3>Datos en crudo (Uso Textual HTML)</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>País</th>
-                <th>Alfabetización</th>
-                <th>Satélites en nuestra API</th>
-            </tr>
-        </thead>
-        <tbody>
-            {#each literacyData.filter(l => satelliteData.some(s => s.country === l.country)) as item}
-                <tr>
-                    <td>{item.country}</td>
-                    <td>{item.total}%</td>
-                    <td>{satelliteData.filter(s => s.country === item.country).length}</td>
-                </tr>
-            {/each}
-        </tbody>
-    </table>
 </main>
 
 <style>
-    .canvas-container { width: 80%; margin: 0 auto; background: #fff; padding: 20px; border-radius: 10px; }
-    table { width: 100%; margin-top: 20px; border-collapse: collapse; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-    main { font-family: sans-serif; padding: 20px; }
+    .canvas-container { 
+        width: 80%; 
+        margin: 0 auto; 
+        background: #fff; 
+        padding: 20px; 
+        border-radius: 10px; 
+    }
+    main { 
+        font-family: sans-serif; 
+        padding: 20px; 
+    }
 </style>
