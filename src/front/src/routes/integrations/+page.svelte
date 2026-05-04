@@ -50,7 +50,6 @@
 
 <br><hr><br>
 
-<!-- SECCIÓN DE TUS COMPAÑEROS (Ellos añadirán sus botones aquí) -->
 <h3>Integraciones de active-satellites [Jaime García Algarra]</h3>
 <div style="display: flex; flex-direction: column; gap: 10px; max-width: 400px;">
     
@@ -62,11 +61,41 @@
 
 <br><hr><br>
 
-<h3>Integraciones de [Nombre Compañero 2]</h3>
-<p><i>(A la espera de que el compañero añada sus enlaces a sus carpetas...)</i></p>
+<h3>Integraciones de [Fernando Reguera Bueno]</h3>
+<div style="display: flex; flex-direction: column; gap: 10px; max-width: 400px;">
+    
+    <button onclick={() => goto('/integrations/space-launches/pandemics')}>
+        1. API pandemics (Integración Compañero SOS) - Widget
+    </button>
+    <button onclick={() => goto('/integrations/space-launches/soporte-cost-of-healthy-diet')}>
+        2. API soporte-cost-of-healthy-diet (Integración Compañero SOS) - Widget
+    </button>
+    <button onclick={() => goto('/integrations/space-launches/iss-location')}>
+        3. API iss-location (Uso api externa con PROXY PROPIO) - Widget
+    </button>
 
+</div>
 <br><br>
+
+
+
+
+
+
+
+
+
+
 <button onclick={() => goto('/')}>Volver a la Página Principal</button>
+
+
+
+
+
+
+
+
+
 
 <style>
     button {

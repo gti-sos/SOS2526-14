@@ -117,7 +117,7 @@
         Highcharts.chart(chartContainer, {
             chart: { type: 'treemap', backgroundColor: '#0d1117' },
             title: {
-                text: '🚀 Lanzamientos espaciales vs 🦠 ' + diseaseLabel + ' por país',
+                text: ' Lanzamientos espaciales vs  ' + diseaseLabel + ' por país',
                 style: { color: '#e6edf3' }
             },
             subtitle: {
@@ -134,9 +134,9 @@
                 formatter: function () {
                     const p = this.point;
                     const pandemicStr = p.pandemicVal > 0
-                        ? `🦠 ${diseaseLabel}: <b>${p.pandemicVal.toLocaleString()}</b> casos acumulados`
-                        : `🦠 ${diseaseLabel}: <b>sin datos</b>`;
-                    return `<b>🌍 ${p.name}</b><br>🚀 Lanzamientos: <b>${p.value}</b><br>${pandemicStr}`;
+                        ? ` ${diseaseLabel}: <b>${p.pandemicVal.toLocaleString()}</b> casos acumulados`
+                        : ` ${diseaseLabel}: <b>sin datos</b>`;
+                    return `<b> ${p.name}</b><br> Lanzamientos: <b>${p.value}</b><br>${pandemicStr}`;
                 },
                 backgroundColor: '#161b22',
                 borderColor: '#30363d',
@@ -175,7 +175,7 @@
 
 <div class="wrap">
     <button class="back-btn" onclick={() => goto('/integrations')}>← Volver a integraciones</button>
-    <button class="back-btn" onclick={() => goto('/')}>🏠 Portada</button>
+    <button class="back-btn" onclick={() => goto('/')}> Portada</button>
 
     <h2>🚀 Space Launches × 🦠 Pandemias</h2>
 
@@ -189,9 +189,9 @@
         </label>
         {#if !loading && !errorMsg}
             <div class="badges">
-                <span class="badge">🚀 {totalLaunches.toLocaleString()} lanzamientos</span>
-                <span class="badge">🦠 {totalPandemics.toLocaleString()} registros pandemia</span>
-                <span class="badge">🌍 {matchedCountries} países cruzados</span>
+                <span class="badge"> {totalLaunches.toLocaleString()} lanzamientos</span>
+                <span class="badge"> {totalPandemics.toLocaleString()} registros pandemia</span>
+                <span class="badge"> {matchedCountries} países cruzados</span>
             </div>
         {/if}
     </div>
