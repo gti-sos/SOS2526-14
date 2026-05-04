@@ -34,64 +34,39 @@
 
             loading = false;
 
-            // 4. Configuración del Gráfico: COMBINADO DOBLE EJE (Columnas + Spline)
+            // 4. Configuración del Gráfico: COMBINADO DOBLE EJE
             Highcharts.chart(chartContainer, {
-                chart: {
-                    zoomType: 'xy' // Permite hacer zoom si hay muchos datos
-                },
-                title: {
-                    text: 'Relación: Media (Overall) vs Salario (€)'
-                },
-                subtitle: {
-                    text: 'Top 10 Jugadores FIFA 23'
-                },
+                chart: { zoomType: 'xy' },
+                title: { text: 'Relación: Media (Overall) vs Salario (€)' },
+                subtitle: { text: 'Top 10 Jugadores FIFA 23' },
                 xAxis: [{
                     categories: playersData.map(p => p.Name),
                     crosshair: true
                 }],
-                yAxis: [{ // Eje Y Primario (Izquierda) - Para la Media
+                yAxis: [{ // Eje Y Primario (Izquierda) - Media
                     min: 80,
                     max: 100,
-                    title: {
-                        text: 'Media (Overall)',
-                        style: { color: '#e74c3c' }
-                    },
-                    labels: {
-                        format: '{value} pts',
-                        style: { color: '#e74c3c' }
-                    }
-                }, { // Eje Y Secundario (Derecha) - Para el Salario
-                    title: {
-                        text: 'Salario (€)',
-                        style: { color: '#2980b9' }
-                    },
-                    labels: {
-                        format: '{value} €',
-                        style: { color: '#2980b9' }
-                    },
-                    opposite: true // ¡Esto lo pone a la derecha!
+                    title: { text: 'Media (Overall)', style: { color: '#e74c3c' } },
+                    labels: { format: '{value} pts', style: { color: '#e74c3c' } }
+                }, { // Eje Y Secundario (Derecha) - Salario
+                    title: { text: 'Salario (€)', style: { color: '#2980b9' } },
+                    labels: { format: '{value} €', style: { color: '#2980b9' } },
+                    opposite: true
                 }],
-                tooltip: {
-                    shared: true // Muestra ambos datos al pasar el ratón
-                },
+                tooltip: { shared: true },
                 series: [{
                     name: 'Salario',
-                    type: 'column', // Tipo 1: Columnas
-                    yAxis: 1, // Lo vinculamos al eje derecho
+                    type: 'column',
+                    yAxis: 1, // Vinculado al eje derecho
                     data: playersData.map(p => Number(p['Wage€'])),
                     color: 'rgba(41, 128, 185, 0.7)',
                     tooltip: { valueSuffix: ' €' }
-
                 }, {
                     name: 'Media (Overall)',
-                    type: 'spline', // Tipo 2: Línea curva
+                    type: 'spline',
                     data: playersData.map(p => p.Overall),
                     color: '#e74c3c',
-                    marker: {
-                        lineWidth: 2,
-                        lineColor: '#e74c3c',
-                        fillColor: 'white'
-                    },
+                    marker: { lineWidth: 2, lineColor: '#e74c3c', fillColor: 'white' },
                     tooltip: { valueSuffix: ' pts' }
                 }],
                 credits: { enabled: false }
@@ -120,13 +95,14 @@
         <div class="status">Cargando datos de la API...</div>
     {:else if errorMsg}
         <div class="status error">{errorMsg}</div>
-    {:else}
-        <figure class="highcharts-figure">
-            <div bind:this={chartContainer} id="container"></div>
-        </figure>
+    {/if}
 
+    <figure class="highcharts-figure" style="display: {loading || errorMsg ? 'none' : 'block'};">
+        <div bind:this={chartContainer} id="container"></div>
+    </figure>
+
+    {#if !loading && !errorMsg}
         <hr>
-
         <section>
             <h3>Ficha Detallada (Uso Textual)</h3>
             <table>
