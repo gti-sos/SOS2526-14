@@ -59,7 +59,10 @@
     <button onclick={() => goto('/integrations/active-satellites/food-supply-utilization-accounts')}>
         2. API food-supply-utilization-accounts (Integración Compañero SOS) - Widget
     </button>
-    
+
+    <button onclick={() => goto('/integrations/active-satellites/fifa23-players')}>
+        3. API fifa23-players (Uso Externo) - Widget
+    </button>
     </div>
 
 <br><hr><br>

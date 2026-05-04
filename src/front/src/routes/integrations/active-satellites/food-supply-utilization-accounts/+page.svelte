@@ -94,35 +94,7 @@
 
     <hr>
 
-    <section>
-        <h3>📊 Datos Detallados (Uso Textual HTML)</h3>
-        <p><i>Esta tabla cumple el requisito obligatorio de mostrar el cruce de datos en formato lista/tabla.</i></p>
-        
-        {#if tableData.length > 0}
-            <table>
-                <thead>
-                    <tr>
-                        <th>País</th>
-                        <th>Nº de Satélites</th>
-                        <th>Importaciones (Toneladas)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {#each tableData as row}
-                        <tr>
-                            <td><strong>{row.country}</strong></td>
-                            <td>{row.satellites} unidades</td>
-                            <td>{row.imports} t</td>
-                        </tr>
-                    {/each}
-                </tbody>
-            </table>
-        {:else}
-            <div class="empty-state">
-                Buscando coincidencias exactas de países entre ambas bases de datos...
-            </div>
-        {/if}
-    </section>
+   
 </main>
 
 <style>
@@ -145,37 +117,9 @@
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-        background: white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-
-    th, td {
-        border: 1px solid #e0e0e0;
-        padding: 12px 15px;
-        text-align: left;
-    }
-
-    th {
-        background-color: #2c3e50;
-        color: white;
-        text-transform: uppercase;
-        font-size: 0.9em;
-    }
-
-    tr:nth-child(even) { background-color: #f8f9fa; }
-    tr:hover { background-color: #eef2f5; }
+    
 
     hr { margin: 40px 0; border: 0; border-top: 2px dashed #eee; }
 
-    .empty-state {
-        padding: 20px;
-        background: #fff3cd;
-        color: #856404;
-        border-radius: 8px;
-        text-align: center;
-    }
+    
 </style>
