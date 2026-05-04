@@ -51,8 +51,16 @@
 <br><hr><br>
 
 <!-- SECCIÓN DE TUS COMPAÑEROS (Ellos añadirán sus botones aquí) -->
-<h3>Integraciones de [Nombre Compañero 1]</h3>
-<p><i>(A la espera de que el compañero añada sus enlaces a sus carpetas...)</i></p>
+<h3>Integraciones de active-satellites [Jaime García Algarra]</h3>
+<div style="display: flex; flex-direction: column; gap: 10px; max-width: 400px;">
+    
+    <button onclick={() => goto('/integrations/active-satellites/literacy-rates')}>
+        1. API literacy-rates (Integración Compañero SOS) - Widget
+    </button>
+    
+    </div>
+
+<br><hr><br>
 
 <h3>Integraciones de [Nombre Compañero 2]</h3>
 <p><i>(A la espera de que el compañero añada sus enlaces a sus carpetas...)</i></p>
