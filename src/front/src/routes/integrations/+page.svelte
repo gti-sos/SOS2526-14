@@ -56,6 +56,9 @@
     <button onclick={() => goto('/integrations/active-satellites/literacy-rates')}>
         1. API literacy-rates (Integración Compañero SOS) - Widget
     </button>
+    <button onclick={() => goto('/integrations/active-satellites/food-supply-utilization-accounts')}>
+        2. API food-supply-utilization-accounts (Integración Compañero SOS) - Widget
+    </button>
     
     </div>
 
