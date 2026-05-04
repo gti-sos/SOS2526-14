@@ -84,8 +84,7 @@ router.get("/loadInitialData", (req, res) => {
 });
 
 /* ============================================================
-   5. STATISTICS (NUEVO EN V2) - Filtro por rango de años
-   Ejemplo: /api/v2/space-launches/statistics?from=2000&to=2020
+   STATISTICS - Filtro por rango de años
 ============================================================ */
 router.get("/statistics", (req, res) => {
     const from = parseInt(req.query.from);
@@ -99,6 +98,26 @@ router.get("/statistics", (req, res) => {
         if (err) return res.status(500).json({ error: "Error al consultar la DB" });
         res.status(200).json(launches);
     });
+});
+
+/* ============================================================
+   PROXY ISS (Open Notify API)
+   IMPORTANTE: debe ir ANTES de /:country/:mission_id
+   para que Express no lo confunda con un país.
+   Accesible en: /api/v2/space-launches/proxy/iss-location
+============================================================ */
+router.get("/proxy/iss-location", async (req, res) => {
+    try {
+        const response = await fetch("http://api.open-notify.org/iss-now.json");
+        if (!response.ok) {
+            return res.status(response.status).json({ error: "Error al contactar con la API de la ISS" });
+        }
+        const data = await response.json();
+        res.json(data);
+    } catch (err) {
+        console.error("Error en el proxy ISS:", err);
+        res.status(500).json({ error: "Error interno del proxy ISS: " + err.message });
+    }
 });
 
 /* ============================================================
@@ -175,7 +194,7 @@ router.delete("/", (req, res) => {
 });
 
 /* ============================================================
-   GET RECURSO
+   GET RECURSO — va DESPUÉS del proxy
 ============================================================ */
 router.get("/:country/:mission_id", (req, res) => {
 
