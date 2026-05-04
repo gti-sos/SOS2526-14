@@ -63,6 +63,9 @@
     <button onclick={() => goto('/integrations/active-satellites/fifa23-players')}>
         3. API fifa23-players (Uso Externo) - Widget
     </button>
+     <button onclick={() => goto('/integrations/active-satellites/COVID-19-statics')}>
+        4. API COVID-19-statics (Uso Externo) - Widget
+    </button>
     </div>
 
 <br><hr><br>
