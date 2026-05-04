@@ -37,7 +37,7 @@
             // 4. Configuración del Gráfico: COMBINADO DOBLE EJE
             Highcharts.chart(chartContainer, {
                 chart: { zoomType: 'xy' },
-                title: { text: 'Relación: Media (Overall) vs Salario (€)' },
+                title: { text: 'Relación: Media (Overall) vs Salario (£)' }, // Actualizado a £
                 subtitle: { text: 'Top 10 Jugadores FIFA 23' },
                 xAxis: [{
                     categories: playersData.map(p => p.Name),
@@ -49,18 +49,19 @@
                     title: { text: 'Media (Overall)', style: { color: '#e74c3c' } },
                     labels: { format: '{value} pts', style: { color: '#e74c3c' } }
                 }, { // Eje Y Secundario (Derecha) - Salario
-                    title: { text: 'Salario (€)', style: { color: '#2980b9' } },
-                    labels: { format: '{value} €', style: { color: '#2980b9' } },
+                    title: { text: 'Salario (£)', style: { color: '#2980b9' } }, // Actualizado a £
+                    labels: { format: '{value} £', style: { color: '#2980b9' } }, // Actualizado a £
                     opposite: true
                 }],
                 tooltip: { shared: true },
                 series: [{
                     name: 'Salario',
                     type: 'column',
-                    yAxis: 1, // Vinculado al eje derecho
-                    data: playersData.map(p => Number(p['Wage€'])),
+                    yAxis: 1,
+                    // ✅ LA CORRECCIÓN ESTÁ AQUÍ: Usamos Wage£
+                    data: playersData.map(p => Number(p['Wage£'])),
                     color: 'rgba(41, 128, 185, 0.7)',
-                    tooltip: { valueSuffix: ' €' }
+                    tooltip: { valueSuffix: ' £' }
                 }, {
                     name: 'Media (Overall)',
                     type: 'spline',
@@ -112,8 +113,7 @@
                         <th>Nombre</th>
                         <th>Club</th>
                         <th>Media (Overall)</th>
-                        <th>Salario (€)</th>
-                    </tr>
+                        <th>Salario (£)</th> </tr>
                 </thead>
                 <tbody>
                     {#each playersData as player}
@@ -122,7 +122,7 @@
                             <td><strong>{player.Name}</strong></td>
                             <td>{player.Club}</td>
                             <td class="overall">{player.Overall}</td>
-                            <td class="wage">€ {Number(player['Wage€']).toLocaleString()}</td>
+                            <td class="wage">£ {Number(player['Wage£']).toLocaleString()}</td>
                         </tr>
                     {/each}
                 </tbody>
