@@ -5,204 +5,154 @@
 
     const LAUNCHES_API = '/api/v2/space-launches';
     const ISS_PROXY = '/api/v2/space-launches/proxy/iss-location';
+    const COUNTRIES_API = 'https://restcountries.com/v3.1/all?fields=name,latlng';
     
-    let loading       = $state(true);
-    let errorMsg      = $state('');
-    let issData       = $state(null);
-    let ultimosLanzamientos = $state([]);
-    let totalLaunches = $state(0);
-    let lastUpdate    = $state('');
+    let loading = $state(true);
+    let errorMsg = $state('');
+    let tablaMezclada = $state([]);
+    let intervalo;
 
-    async function autoLoad(url, loadUrl) {
-        let res  = await fetch(`${url}?limit=0`);
+    // Fórmula matemática para cruzar coordenadas (Haversine)
+    function calcularDistancia(lat1, lon1, lat2, lon2) {
+        if(!lat1 || !lon1 || !lat2 || !lon2) return null;
+        const R = 6371; // Radio de la Tierra en km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+        return Math.round(R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))));
+    }
+
+    async function autoLoad(url) {
+        let res = await fetch(`${url}?limit=0`);
         let data = await res.json();
-        if (Array.isArray(data) && data.length === 0) {
-            await fetch(loadUrl);
-            res  = await fetch(`${url}?limit=0`);
-            data = await res.json();
+        if (data.length === 0) { 
+            await fetch(`${url}/loadInitialData`); 
+            res = await fetch(`${url}?limit=0`); 
+            data = await res.json(); 
         }
         return data;
     }
 
-    async function cargarISS() {
-        const res  = await fetch(ISS_PROXY);
-        if (!res.ok) throw new Error(`Proxy ISS: ${res.status}`);
-        return await res.json();
-    }
-
-    onMount(async () => {
-        await cargarDatos();
-        // Actualizar la posición de la ISS cada 5 segundos
-        const intervalo = setInterval(actualizarISS, 5000);
-        return () => clearInterval(intervalo);
-    });
-
-    async function cargarDatos() {
-        loading  = true;
-        errorMsg = '';
+    async function cargarSuperMashup() {
         try {
-            const [launches, iss] = await Promise.all([
-                autoLoad(LAUNCHES_API, `${LAUNCHES_API}/loadInitialData`),
-                cargarISS()
+            // Hacemos el fetch a las 3 APIs a la vez
+            const [launches, issRes, countriesRes] = await Promise.all([
+                autoLoad(LAUNCHES_API),
+                fetch(ISS_PROXY),
+                fetch(COUNTRIES_API)
             ]);
 
-            totalLaunches = launches.length;
+            if (!issRes.ok) throw new Error('Error en el Proxy de la ISS');
+            const issData = await issRes.json();
+            const countries = await countriesRes.json();
 
-            // Últimos 10 lanzamientos (los más recientes por año)
-            ultimosLanzamientos = [...launches]
-                .filter(m => m.year)
-                .sort((a, b) => b.year - a.year)
-                .slice(0, 10);
+            const issLat = parseFloat(issData.iss_position.latitude);
+            const issLon = parseFloat(issData.iss_position.longitude);
 
-            issData    = iss;
-            lastUpdate = new Date().toLocaleTimeString('es-ES');
+            // MEZCLA DE DATOS
+            const cruce = [];
+            
+            // Cogemos los últimos 10 lanzamientos para no saturar la tabla
+            const top10 = launches.slice(0, 10);
+
+            top10.forEach(l => {
+                let latPais = null;
+                let lonPais = null;
+                
+                // 1. Buscamos dinámicamente las coordenadas del país de tu API en REST Countries
+                const paisEncontrado = countries.find(c => {
+                    const nameExt = c.name.common.toLowerCase();
+                    const nameInt = (l.country || '').toLowerCase();
+                    return nameExt.includes(nameInt) || nameInt.includes(nameExt);
+                });
+
+                if (paisEncontrado && paisEncontrado.latlng) {
+                    latPais = paisEncontrado.latlng[0];
+                    lonPais = paisEncontrado.latlng[1];
+                }
+
+                // 2. Cruzamos esas coordenadas con las de la ISS
+                const distancia = (latPais && lonPais) 
+                    ? calcularDistancia(latPais, lonPais, issLat, issLon) 
+                    : null;
+
+                // 3. Generamos la fila unificada
+                cruce.push({
+                    cohete: l.rocket_name,
+                    pais: l.country,
+                    distancia_km: distancia
+                });
+            });
+
+            tablaMezclada = cruce;
+            loading = false;
 
         } catch (err) {
-            errorMsg = `Error: ${err.message}`;
-            console.error(err);
-        } finally {
+            errorMsg = err.message;
             loading = false;
         }
     }
 
-    async function actualizarISS() {
-        try {
-            const iss  = await cargarISS();
-            issData    = iss;
-            lastUpdate = new Date().toLocaleTimeString('es-ES');
-        } catch (err) {
-            console.error('Error actualizando ISS:', err);
-        }
-    }
-
-    function formatCoord(val) {
-        return Number(val).toFixed(4);
-    }
+    onMount(() => {
+        cargarSuperMashup();
+        // Recalcular la distancia en tiempo real cada 5 segundos según se mueve la ISS
+        intervalo = setInterval(cargarSuperMashup, 5000); 
+        return () => clearInterval(intervalo);
+    });
 </script>
 
 <style>
     .wrap { background:#0d1117; min-height:100vh; padding:24px; font-family:sans-serif; color:#e6edf3; }
     h2 { color:#e6edf3; margin-bottom:4px; }
     p.sub { color:#8b949e; font-size:13px; margin-bottom:16px; }
-    .back-btn { background:#21262d; border:1px solid #30363d; color:#8b949e; padding:6px 14px; border-radius:8px; cursor:pointer; font-size:13px; margin-bottom:16px; display:inline-block; margin-right:8px; }
+    .back-btn { background:#21262d; border:1px solid #30363d; color:#8b949e; padding:6px 14px; border-radius:8px; cursor:pointer; margin-bottom:16px; display:inline-block; margin-right:8px; }
     .back-btn:hover { border-color:#58a6ff; color:#58a6ff; }
-
-    .grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
-
-    .iss-box { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:20px; }
-    .iss-box h3 { color:#e6edf3; font-size:15px; margin-bottom:12px; }
-    .iss-coord { font-size:28px; font-weight:bold; color:#58a6ff; margin:8px 0; }
-    .iss-detail { color:#8b949e; font-size:13px; margin-top:6px; }
-    .pulse { display:inline-block; width:10px; height:10px; background:#39FF14; border-radius:50%; margin-right:6px; animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
-    .update { font-size:12px; color:#30363d; margin-top:10px; }
-
     .tabla-box { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:16px; }
-    .tabla-box h3 { color:#e6edf3; font-size:14px; margin-bottom:10px; }
-    table { width:100%; border-collapse:collapse; font-size:13px; }
-    th { color:#8b949e; padding:8px 10px; text-align:left; border-bottom:1px solid #30363d; }
-    td { padding:8px 10px; border-bottom:1px solid #21262d; color:#e6edf3; }
-    tr:hover td { background:#21262d; }
-
-    .badges { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
-    .badge { font-size:12px; background:#161b22; border:1px solid #30363d; padding:4px 10px; border-radius:20px; color:#8b949e; }
-    .status-ok { color:#39FF14; font-weight:bold; }
-    .status { text-align:center; padding:60px 0; color:#8b949e; }
-    .status.error { color:#f85149; }
-    .hint { font-size:12px; color:#30363d; margin-top:16px; text-align:center; }
-    .proxy-note { background:#161b22; border:1px solid #30363d; border-radius:6px; padding:10px 14px; font-size:12px; color:#8b949e; margin-bottom:16px; }
-    .proxy-note strong { color:#e6edf3; }
+    table { width:100%; border-collapse:collapse; font-size:13px; text-align: left; }
+    th { color:#8b949e; padding:10px; border-bottom:1px solid #30363d; }
+    td { padding:10px; border-bottom:1px solid #21262d; color:#e6edf3; }
+    .proxy-note { background:#161b22; border:1px solid #30363d; border-radius:6px; padding:10px; font-size:12px; color:#8b949e; margin-bottom:16px; }
+    .highlight { color: #39FF14; font-weight: bold; }
 </style>
 
 <div class="wrap">
-    <button class="back-btn" onclick={() => goto('/integrations')}>← Volver a integraciones</button>
-    <button class="back-btn" onclick={() => goto('/')}>🏠 Portada</button>
+    <button class="back-btn" onclick={() => goto('/integrations')}>← Volver</button>
 
-    <h2>🚀 Space Launches × 🛸 Posición en Tiempo Real de la ISS</h2>
-    <p class="sub">
-        Posición actual de la Estación Espacial Internacional obtenida mediante un
-        <strong>proxy propio</strong> en nuestro backend Express,
-        junto con los lanzamientos más recientes de nuestra API.
-    </p>
+    <h2>🛸 Integración Pura: Lanzamientos × ISS Proxy</h2>
+    <p class="sub">Distancia en tiempo real entre la posición actual de la ISS y los países de origen de nuestros lanzamientos.</p>
 
-    <div class="proxy-note">
-        🔀 <strong>Proxy:</strong> El frontend llama a <code>/api/proxy/iss-location</code> (nuestro Express),
-        que a su vez consulta <code>api.open-notify.org/iss-now.json</code> — evitando problemas de CORS.
-    </div>
-
-    {#if !loading && !errorMsg}
-        <div class="badges">
-            <span class="badge">🚀 {totalLaunches.toLocaleString()} lanzamientos históricos</span>
-            <span class="badge"><span class="pulse"></span>ISS actualizándose cada 5s</span>
-        </div>
-    {/if}
+    <div class="proxy-note">🔀 Usando Proxy Local para ISS y resolviendo coordenadas dinámicamente con REST Countries.</div>
 
     {#if loading}
-        <div class="status">⟳ Conectando con proxy ISS y cargando lanzamientos...</div>
+        <div style="color: #8b949e; padding: 40px; text-align: center;">⟳ Mezclando datos en tiempo real...</div>
     {:else if errorMsg}
-        <div class="status error">❌ {errorMsg}</div>
+        <div style="color: #f85149; padding: 40px; text-align: center;">❌ {errorMsg}</div>
     {:else}
-        <div class="grid">
-            <!-- Panel ISS -->
-            <div class="iss-box">
-                <h3>🛸 Posición actual de la ISS</h3>
-                {#if issData}
-                    <div class="iss-coord">
-                        📍 {formatCoord(issData.iss_position?.latitude)}°,
-                           {formatCoord(issData.iss_position?.longitude)}°
-                    </div>
-                    <div class="iss-detail">Latitud: <strong>{formatCoord(issData.iss_position?.latitude)}°</strong></div>
-                    <div class="iss-detail">Longitud: <strong>{formatCoord(issData.iss_position?.longitude)}°</strong></div>
-                    <div class="iss-detail">
-                        Timestamp: <strong>{new Date(issData.timestamp * 1000).toLocaleString('es-ES')}</strong>
-                    </div>
-                    <div class="iss-detail">
-                        Estado: <span class="status-ok">● En órbita</span>
-                    </div>
-                    <div class="update">Última actualización: {lastUpdate}</div>
-                {/if}
-
-                <br>
-                <p style="color:#8b949e; font-size:13px;">
-                    La ISS orbita la Tierra a ~400 km de altitud, completando una vuelta
-                    cada 90 minutos a ~27.600 km/h. Su posición cambia constantemente —
-                    refresca cada 5 segundos para ver el movimiento.
-                </p>
-            </div>
-
-            <!-- Tabla últimos lanzamientos -->
-            <div class="tabla-box">
-                <h3>🚀 Últimos 10 lanzamientos registrados</h3>
-                <table>
-                    <thead>
+        <div class="tabla-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cohete (Nuestra API)</th>
+                        <th>País de Lanzamiento (Nuestra API)</th>
+                        <th>Distancia actual a la ISS (Dato Mezclado)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {#each tablaMezclada as fila}
                         <tr>
-                            <th>Año</th>
-                            <th>Empresa</th>
-                            <th>Cohete</th>
-                            <th>País</th>
-                            <th>Estado</th>
+                            <td>{fila.cohete}</td>
+                            <td>{fila.pais}</td>
+                            <td class="highlight">
+                                {#if fila.distancia_km}
+                                    {fila.distancia_km.toLocaleString()} km
+                                {:else}
+                                    <span style="color: #8b949e; font-weight:normal;">Calculando...</span>
+                                {/if}
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {#each ultimosLanzamientos as m}
-                            <tr>
-                                <td>{m.year}</td>
-                                <td>{m.company_name}</td>
-                                <td>{m.rocket_name}</td>
-                                <td>{m.country}</td>
-                                <td style="color: {m.mission_status === 'Success' ? '#39FF14' : '#f85149'}">
-                                    {m.mission_status}
-                                </td>
-                            </tr>
-                        {/each}
-                    </tbody>
-                </table>
-            </div>
+                    {/each}
+                </tbody>
+            </table>
         </div>
-
-        <p class="hint">
-            ISS: Open Notify API (vía proxy /api/proxy/iss-location) ·
-            Lanzamientos: /api/v2/space-launches
-        </p>
     {/if}
 </div>

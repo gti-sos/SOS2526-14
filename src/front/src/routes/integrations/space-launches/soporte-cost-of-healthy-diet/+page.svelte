@@ -195,9 +195,9 @@
 
     <div class="wrap">
         <button class="back-btn" onclick={() => goto('/integrations')}>← Volver a integraciones</button>
-        <button class="back-btn" onclick={() => goto('/')}>🏠 Portada</button>
+        <button class="back-btn" onclick={() => goto('/')}> Portada</button>
 
-        <h2>🚀 Space Launches × 🥗 Coste de Dieta Saludable</h2>
+        <h2> Space Launches ×  Coste de Dieta Saludable</h2>
         <p class="sub">
             Cruce entre lanzamientos espaciales por país y el coste diario de una dieta saludable —
             ¿los países que más invierten en espacio tienen dietas más caras?
@@ -209,9 +209,9 @@
             <div class="status error">❌ {errorMsg}</div>
         {:else}
             <div class="badges">
-                <span class="badge">🚀 {totalLaunches.toLocaleString()} lanzamientos</span>
-                <span class="badge">🥗 {totalDiet.toLocaleString()} registros de dieta</span>
-                <span class="badge">🌍 {filas.filter(f => f.costDay !== null).length} países cruzados</span>
+                <span class="badge"> {totalLaunches.toLocaleString()} lanzamientos</span>
+                <span class="badge"> {totalDiet.toLocaleString()} registros de dieta</span>
+                <span class="badge"> {filas.filter(f => f.costDay !== null).length} países cruzados</span>
             </div>
 
             <div class="controls">
@@ -242,11 +242,11 @@
                 <thead>
                     <tr>
                         <th onclick={() => toggleSort('country')}>País {sortIcon('country')}</th>
-                        <th onclick={() => toggleSort('launches')}>🚀 Lanzamientos {sortIcon('launches')}</th>
-                        <th onclick={() => toggleSort('tasaExito')}>✅ Tasa éxito {sortIcon('tasaExito')}</th>
+                        <th onclick={() => toggleSort('launches')}> Lanzamientos {sortIcon('launches')}</th>
+                        <th onclick={() => toggleSort('tasaExito')}> Tasa éxito {sortIcon('tasaExito')}</th>
                         <th onclick={() => toggleSort('region')}>Región {sortIcon('region')}</th>
-                        <th onclick={() => toggleSort('costDay')}>💰 Coste/día (USD PPP) {sortIcon('costDay')}</th>
-                        <th onclick={() => toggleSort('costYear')}>💰 Coste anual (USD) {sortIcon('costYear')}</th>
+                        <th onclick={() => toggleSort('costDay')}> Coste/día (USD PPP) {sortIcon('costDay')}</th>
+                        <th onclick={() => toggleSort('costYear')}> Coste anual (USD) {sortIcon('costYear')}</th>
                         <th onclick={() => toggleSort('year')}>Año dato {sortIcon('year')}</th>
                         <th>Categoría</th>
                     </tr>
