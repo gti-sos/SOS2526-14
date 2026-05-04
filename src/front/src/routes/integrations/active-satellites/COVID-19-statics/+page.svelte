@@ -1,116 +1,118 @@
 <script>
+    // @ts-nocheck
     import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
 
-    let ChartComponent;
-    let options = {};
-    let series = [];
-    let regionsData = [];
-    let loading = true;
-    let error = null;
+    let chartContainer;
+    let covidData = $state([]); 
+    let loading = $state(true);
+    let errorMsg = $state('');
 
     onMount(async () => {
         try {
-            // Importación dinámica para evitar errores de compilación
-            const module = await import('svelte-apexcharts');
-            ChartComponent = module.default;
+            // 1. Importamos Highcharts
+            const Highcharts = (await import('highcharts')).default;
+            
+            // 2. Petición a la API pública de COVID (disease.sh)
+            // Ya la pedimos ordenada por número de casos (sort=cases)
+            const response = await fetch('https://disease.sh/v3/covid-19/countries?sort=cases');
 
-            // Llamada a la API de COVID-19
-            const res = await fetch('https://covid-19-statistics.p.rapidapi.com/regions', {
-                method: 'GET',
-                headers: {
-                    // ⚠️ PON AQUÍ TU API KEY REAL DE RAPIDAPI
-                    'X-RapidAPI-Key': '5b5e04d545msh9464806fa4e3e24p1713dbjsnddab4f114579',
-                    'X-RapidAPI-Host': 'covid-19-statistics.p.rapidapi.com'
-                }
-            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
 
-            if (!res.ok) throw new Error('Error al conectar con la API de COVID-19');
-
-            const responseData = await res.json();
-
-            // Según tu captura, el array viene dentro de la propiedad "data"
-            if (responseData && responseData.data) {
-                const allRegions = responseData.data;
-                
-                // Guardamos los primeros 15 países para la tabla HTML (Uso Textual)
-                regionsData = allRegions.slice(0, 15);
-
-                // MÁGIA PARA EL WIDGET: Contamos cuántos países empiezan por cada letra
-                const letterCounts = {};
-                allRegions.forEach(region => {
-                    if (region.name) {
-                        const firstLetter = region.name.charAt(0).toUpperCase();
-                        letterCounts[firstLetter] = (letterCounts[firstLetter] || 0) + 1;
-                    }
-                });
-
-                // Ordenamos para coger las 10 letras más repetidas
-                const topLetters = Object.keys(letterCounts)
-                    .map(letter => ({ letter, count: letterCounts[letter] }))
-                    .sort((a, b) => b.count - a.count)
-                    .slice(0, 10);
-
-                // Preparamos los datos para la gráfica de Anillo (Donut)
-                series = topLetters.map(item => item.count);
-                
-                options = {
-                    chart: { type: 'donut', height: 400 },
-                    labels: topLetters.map(item => `Letra ${item.letter}`),
-                    title: { 
-                        text: 'Top 10 Letras Iniciales de Países/Regiones',
-                        align: 'center',
-                        style: { fontSize: '18px', color: '#2c3e50' }
-                    },
-                    plotOptions: {
-                        pie: { donut: { size: '60%' } }
-                    },
-                    legend: { position: 'right' },
-                    theme: { palette: 'palette2' } // Usamos otra paleta para que no sea igual a la del FIFA
-                };
+            // 3. Extraemos solo los 10 primeros países
+            if (data && data.length > 0) {
+                covidData = data.slice(0, 10);
             } else {
-                throw new Error("No se encontró el array de regiones en la respuesta.");
+                throw new Error("No se encontraron datos en la API");
             }
 
             loading = false;
-        } catch (e) {
-            console.error(e);
-            error = "Hubo un problema cargando los datos: " + e.message;
+
+            // 4. Configuración del Gráfico: TARTA (Pie Chart)
+            Highcharts.chart(chartContainer, {
+                chart: {
+                    type: 'pie', // ✅ TIPO NUEVO: Tarta clásica
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false
+                },
+                title: {
+                    text: 'Top 10 Países con más Casos de COVID-19'
+                },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.y:,.0f} casos</b> ({point.percentage:.1f}%)'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+                        }
+                    }
+                },
+                series: [{
+                    name: 'Casos Totales',
+                    colorByPoint: true,
+                    // Mapeamos los datos: name (País) y y (Casos totales)
+                    data: covidData.map(country => ({
+                        name: country.country,
+                        y: country.cases
+                    }))
+                }],
+                credits: { enabled: false }
+            });
+
+        } catch (error) {
+            errorMsg = `❌ Error al cargar datos: ${error.message}`;
             loading = false;
         }
     });
 </script>
 
 <main>
-    <h1>Integración Externa: API COVID-19 Regions</h1>
-    <p>Esta integración obtiene datos de regiones directamente desde RapidAPI y los agrupa alfabéticamente.</p>
+    <h2>Integración Externa: Datos COVID-19</h2>
+
+    <div class="nav-buttons">
+        <button onclick={() => goto('/')}>Volver al Inicio</button>
+    </div>
+
+    <p>Visualización de la proporción de casos históricos usando un <strong>Gráfico de Tarta</strong> y la API de disease.sh.</p>
 
     {#if loading}
-        <div class="status">Cargando regiones...</div>
-    {:else if error}
-        <div class="status error">{error}</div>
-    {:else}
-        <div class="chart-container">
-            {#if ChartComponent}
-                <svelte:component this={ChartComponent} {options} {series} />
-            {/if}
-        </div>
+        <div class="status">Cargando datos epidemiológicos...</div>
+    {:else if errorMsg}
+        <div class="status error">{errorMsg}</div>
+    {/if}
 
+    <figure class="highcharts-figure" style="display: {loading || errorMsg ? 'none' : 'block'};">
+        <div bind:this={chartContainer} id="container"></div>
+    </figure>
+
+    {#if !loading && !errorMsg}
         <hr>
-
         <section>
-            <h3>Listado de Regiones (Uso Textual)</h3>
+            <h3>Ficha Detallada (Uso Textual)</h3>
             <table>
                 <thead>
                     <tr>
-                        <th>Código ISO</th>
-                        <th>Nombre de la Región / País</th>
+                        <th>Bandera</th>
+                        <th>País</th>
+                        <th>Casos Totales</th>
+                        <th>Recuperados</th>
+                        <th>Fallecidos</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {#each regionsData as region}
+                    {#each covidData as country}
                         <tr>
-                            <td><strong>{region.iso}</strong></td>
-                            <td>{region.name}</td>
+                            <td class="center"><img src={country.countryInfo.flag} alt="Bandera de {country.country}" width="30"></td>
+                            <td><strong>{country.country}</strong></td>
+                            <td class="cases">{country.cases.toLocaleString()}</td>
+                            <td class="recovered">{country.recovered.toLocaleString()}</td>
+                            <td class="deaths">{country.deaths.toLocaleString()}</td>
                         </tr>
                     {/each}
                 </tbody>
@@ -120,35 +122,29 @@
 </main>
 
 <style>
-    main { 
-        max-width: 900px; 
-        margin: 0 auto; 
-        padding: 20px; 
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-        color: #333;
+    main { max-width: 900px; margin: 0 auto; padding: 20px; font-family: sans-serif; }
+    .nav-buttons { margin-bottom: 20px; }
+    
+    #container {
+        width: 100%;
+        height: 500px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        background: white;
     }
+
+    .status { text-align: center; padding: 20px; background: #eee; border-radius: 8px; }
+    .error { color: red; background: #ffdada; border: 1px solid red; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+    th, td { padding: 12px; border: 1px solid #ccc; text-align: left; }
+    th { background: #2c3e50; color: white; }
     
-    h1 { color: #2c3e50; text-align: center; }
-    p { text-align: center; color: #666; margin-bottom: 30px; }
+    .center { text-align: center; }
+    .cases { font-weight: bold; color: #e67e22; text-align: right; }
+    .recovered { font-weight: bold; color: #27ae60; text-align: right; }
+    .deaths { font-weight: bold; color: #c0392b; text-align: right; }
     
-    .chart-container { 
-        background: #fff; 
-        padding: 20px; 
-        border-radius: 12px; 
-        margin-bottom: 30px; 
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-        display: flex;
-        justify-content: center;
-    }
-    
-    .status { text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; font-weight: bold; }
-    .error { color: #721c24; background: #f8d7da; border: 1px solid #f5c6cb; }
-    
-    table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-top: 15px; }
-    th, td { border: 1px solid #e0e0e0; padding: 12px; text-align: left; }
-    th { background-color: #2c3e50; color: white; text-transform: uppercase; font-size: 0.9em; width: 30%; }
-    tr:nth-child(even) { background-color: #f8f9fa; }
-    tr:hover { background-color: #eef2f5; }
-    
-    hr { margin: 40px 0; border: 0; border-top: 2px dashed #eee; }
+    img { border-radius: 4px; border: 1px solid #eee; }
 </style>
