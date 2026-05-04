@@ -20,8 +20,8 @@
             const res = await fetch('https://fifa23-players-data.p.rapidapi.com/list/2', {
                 method: 'GET',
                 headers: {
-                    // ⚠️ IMPORTANTE: SUSTITUYE ESTO POR TU CLAVE REAL DE RAPIDAPI
-                    'X-RapidAPI-Key': 'TU_API_KEY_AQUI',
+                   
+                    'X-RapidAPI-Key': '5b5e04d545msh9464806fa4e3e24p1713dbjsnddab4f114579',
                     'X-RapidAPI-Host': 'fifa23-players-data.p.rapidapi.com'
                 }
             });
