@@ -33,8 +33,10 @@
 		"vite": "^7.3.1"
 	},
 	"dependencies": {
+		"apexcharts": "^5.10.6",
 		"chart.js": "^4.5.1",
 		"highcharts": "^12.6.0",
-		"leaflet": "^1.9.4"
+		"leaflet": "^1.9.4",
+		"svelte-apexcharts": "^1.0.2"
 	}
 }
