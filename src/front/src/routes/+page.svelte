@@ -6,6 +6,7 @@
         <section class="enlaces-box">
             <h2>🔗 Repositorio del Proyecto</h2>
             <a href="https://github.com/gti-sos/SOS2526-14" target="_blank" class="btn-github">Ver en GitHub</a>
+            <a href="/integrations" target="_blank" class="btn-github">Ver Integraciones</a>
         </section>
 
         <section class="equipo-box">

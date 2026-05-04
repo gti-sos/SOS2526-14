@@ -169,10 +169,8 @@
 <button onclick={() => goto('../integrations/meteorite-landings/weather')}>Ver Uso 2</button>
 <button onclick={() => goto('../integrations/meteorite-landings/personajes')}>Ver Uso 3</button>
 <button onclick={() => goto('../integrations/meteorite-landings/earthquakes')}>Grafica API externa 1</button>
-<button onclick={() => goto('../integrations/meteorite-landings/nasa')}>Grafica API externa 2</button>
-
-
-
+<button onclick={() => goto('../integrations/meteorite-landings/nyc-trees')}>Grafica API externa 2</button>
+<button onclick={() => goto('../integrations/meteorite-landings/social-drinking-behaviors')}>Grafica API SOS 3</button>
 
 
 

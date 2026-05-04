@@ -1,0 +1,69 @@
+<script>
+	import { goto } from '$app/navigation';
+</script>
+
+<h2>Menú de Integraciones (Grupo SOS2526-14)</h2>
+
+<p>
+    En esta vista se agrupan todos los usos e integraciones de APIs externas 
+    realizadas por los miembros del grupo, cumpliendo con el requisito D03.B.
+</p>
+
+<hr>
+
+<h3>Integraciones de Meteoritos (Jeremías J. Pluas Charcopa)</h3>
+<div style="display: flex; flex-direction: column; gap: 10px; max-width: 400px;">
+    
+    <button onclick={() => goto('/integrations/meteorite-landings/deaths-by-risk-factors')}>
+        1. API deaths-by-risk-factors (Integración Compañero SOS) - Widget
+    </button>
+
+    <button onclick={() => goto('/integrations/meteorite-landings/national-team-rankings-per-years')}>
+        2. API national-team-rankings-per-years (Integración Compañero SOS) - Widget
+    </button>
+
+    <button onclick={() => goto('/integrations/meteorite-landings/spacex')}>
+        3. API SpaceX (Uso api externa) - Tabla
+    </button>
+    
+    <button onclick={() => goto('/integrations/meteorite-landings/weather')}>
+        4. API Open-Meteo (Uso api externa) - Tabla
+    </button>
+    
+    <button onclick={() => goto('/integrations/meteorite-landings/personajes')}>
+        5. API Rick & Morty (Uso api externa con PROXY PROPIO) - Tabla
+    </button>
+    
+    <button onclick={() => goto('/integrations/meteorite-landings/earthquakes')}>
+        6. API USGS Terremotos (Uso api externa) - Widget
+    </button>
+
+    <button onclick={() => goto('/integrations/meteorite-landings/nyc-trees')}>
+        7. API NYC Trees (Uso api externa) - Widget
+    </button>
+
+    <button onclick={() => goto('/integrations/meteorite-landings/social-drinking-behaviors')}>
+        8. API social-drinking-behaviors (Integración Compañero SOS) - Widget
+    </button>
+
+</div>
+
+<br><hr><br>
+
+<!-- SECCIÓN DE TUS COMPAÑEROS (Ellos añadirán sus botones aquí) -->
+<h3>Integraciones de [Nombre Compañero 1]</h3>
+<p><i>(A la espera de que el compañero añada sus enlaces a sus carpetas...)</i></p>
+
+<h3>Integraciones de [Nombre Compañero 2]</h3>
+<p><i>(A la espera de que el compañero añada sus enlaces a sus carpetas...)</i></p>
+
+<br><br>
+<button onclick={() => goto('/')}>Volver a la Página Principal</button>
+
+<style>
+    button {
+        padding: 10px;
+        text-align: left;
+        cursor: pointer;
+    }
+</style>
