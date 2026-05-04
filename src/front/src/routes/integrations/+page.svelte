@@ -66,6 +66,9 @@
      <button onclick={() => goto('/integrations/active-satellites/COVID-19-statics')}>
         4. API COVID-19-statics (Uso Externo) - Widget
     </button>
+     <button onclick={() => goto('/integrations/active-satellites/formula1')}>
+        5. API Formula1 (Integración externa) - Widget
+    </button>
     </div>
 
 <br><hr><br>
