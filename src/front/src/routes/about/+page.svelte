@@ -16,10 +16,9 @@
 	<h3>1. Jeremías J. Pluas Charcopa - Meteorite Landings</h3>
 	<p>Duración: Menos de 5 minutos.</p>
 	
-	<!-- INSTRUCCIONES: Cambia "ID_DE_TU_VIDEO" por las letras raras que salen en tu URL de YouTube después de "v=" -->
 	<div class="iframe-container">
 		<iframe 
-			src="https://youtu.be/WEbUeTJOqII" 
+			src="https://www.youtube.com/embed/WEbUeTJOqII" 
 			title="Presentación D03 - Jeremías J. Pluas Charcopa" 
 			frameborder="0" 
 			allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
