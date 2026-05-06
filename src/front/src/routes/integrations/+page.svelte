@@ -77,13 +77,25 @@
 <div style="display: flex; flex-direction: column; gap: 10px; max-width: 400px;">
     
     <button onclick={() => goto('/integrations/space-launches/pandemics')}>
-        1. API pandemics (Integración Compañero SOS) - Widget
+        1. API pandemics (Integración Compañero SOS X mi API) - Widget
     </button>
     <button onclick={() => goto('/integrations/space-launches/soporte-cost-of-healthy-diet')}>
-        2. API soporte-cost-of-healthy-diet (Integración Compañero SOS) - Widget
+        2. API cost-of-healthy-diet (Integración Compañero SOS X mi API) - Widget
+    </button>
+    <button onclick={() => goto('/integrations/space-launches/happy')}>
+        3. API happiness-indices (Integración Compañero SOS) - Widget
+    </button>
+    <button onclick={() => goto('/integrations/space-launches/cholera-stats')}>
+        4. API cholera-stats (Integración Compañero SOS) - Widget
+    </button>
+    <button onclick={() => goto('/integrations/space-launches/countries-idh-per-years')}>
+        5. API countries-idh-per-years (Integración Compañero SOS) - Widget
     </button>
     <button onclick={() => goto('/integrations/space-launches/iss-location')}>
-        3. API iss-location (Uso api externa con PROXY PROPIO) - Widget
+        6. API iss-location (Uso api externa con PROXY PROPIO) - Widget
+    </button>
+    <button onclick={() => goto('/integrations/space-launches/nasa-asteroids')}>
+        7. API nasa-asteroids (Uso api externa) - Widget
     </button>
 
 </div>
