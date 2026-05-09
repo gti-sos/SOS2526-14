@@ -70,7 +70,7 @@
         5. API Formula1 (Integración externa) - Widget
     </button>
     <button onclick={() => goto('/integrations/active-satellites/Paises')}>
-        5. API Paises (Integración externa Proxi) - Widget
+        6. API Paises (Uso api externa con PROXY PROPIO) - Widget
     </button>
     </div>
 
