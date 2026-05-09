@@ -69,6 +69,9 @@
      <button onclick={() => goto('/integrations/active-satellites/formula1')}>
         5. API Formula1 (Integración externa) - Widget
     </button>
+    <button onclick={() => goto('/integrations/active-satellites/Paises')}>
+        5. API Paises (Integración externa Proxi) - Widget
+    </button>
     </div>
 
 <br><hr><br>
