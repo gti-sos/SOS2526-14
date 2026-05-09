@@ -114,7 +114,42 @@ router.delete("/", (req, res) => {
         res.status(200).json({ message: `Colección borrada. ${numRemoved} recursos eliminados.` });
     });
 });
+/* ============================================================
+   PROXY PARA LA API DE PAÍSES (Europa)
+============================================================ */
+router.get('/proxy/countries', async (req, res) => { 
+    try {
+        // Llamamos a la API de Países
+        const response = await fetch('https://restcountries.com/v3.1/region/europe');
+        
+        if (!response.ok) {
+            return res.status(response.status).send("Error en la API externa");
+        }
 
+        const data = await response.json();
+        
+        // Ordenamos por población y cogemos los 5 primeros
+        const topCountries = data
+            .sort((a, b) => b.population - a.population)
+            .slice(0, 5)
+            .map(country => ({
+                name: country.translations.spa.common || country.name.common,
+                population: country.population,
+                flag: country.flags.png
+            }));
+
+        res.json(topCountries);
+
+    } catch (error) {
+        console.error("Error en el proxy:", error);
+        res.status(500).json({ error: "Error interno del servidor proxy" });
+    }
+});
+
+/* ============================================================
+    RECURSO CONCRETO (Acciones sobre /:country/:name ) -> Siempre OBJETO en GET
+============================================================ */
+// ... (aquí sigue tu código normal) ...
 /* ============================================================
     RECURSO CONCRETO (Acciones sobre /:country/:name ) -> Siempre OBJETO en GET
 ============================================================ */
