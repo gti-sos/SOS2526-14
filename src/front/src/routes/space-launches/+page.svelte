@@ -90,6 +90,9 @@
             page = 0;
             total = 0;
             await getMisiones();
+            // Limpiamos también las tablas de búsqueda si se borra todo
+            searchResults = [];
+            filtered = [];
         } else {
             setStatus(`❌ Error al borrar. Código: ${res.status}`, false);
         }
@@ -102,6 +105,11 @@
             total = total - 1;
             if (misiones.length === 1 && page > 0) page = page - 1;
             await getMisiones();
+            
+            // ACTALIZACIÓN CLAVE: Quitamos la misión borrada de las listas de búsqueda en vivo
+            searchResults = searchResults.filter(m => !(m.country === country && m.mission_id === id));
+            filtered = filtered.filter(m => !(m.country === country && m.mission_id === id));
+            
         } else if (res.status === 404) {
             setStatus(`❌ No existe una misión con ID ${id} en ${country}.`, false);
         } else {
@@ -232,7 +240,6 @@
 
 <br>
 
-<!-- ── BÚSQUEDA POR PARÁMETROS ───────────────────────────────────────────── -->
 <h3>Buscar por parámetros</h3>
 <table border="1" cellpadding="8" cellspacing="0">
     <thead>
@@ -276,7 +283,7 @@
         <thead>
             <tr>
                 <th>ID</th><th>Empresa</th><th>Cohete</th>
-                <th>Ubicación</th><th>Año</th><th>País</th><th>Estado</th>
+                <th>Ubicación</th><th>Año</th><th>País</th><th>Estado</th><th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -284,6 +291,10 @@
                 <tr>
                     <td>{m.mission_id}</td><td>{m.company_name}</td><td>{m.rocket_name}</td>
                     <td>{m.location}</td><td>{m.year}</td><td>{m.country}</td><td>{m.mission_status}</td>
+                    <td>
+                        <button onclick={() => goto(`/space-launches/edit/${encodeURIComponent(m.country)}/${m.mission_id}`)}>Editar</button>
+                        <button onclick={() => deleteOne(m.country, m.mission_id)}>Eliminar</button>
+                    </td>
                 </tr>
             {/each}
         </tbody>
@@ -292,7 +303,6 @@
 
 <br>
 
-<!-- ── FILTRO POR RANGO DE AÑOS ─────────────────────────────────────────── -->
 <h3>Filtrar por rango de años</h3>
 <input type="number" bind:value={filterFrom} placeholder="Desde (ej: 2000)" />
 <input type="number" bind:value={filterTo}   placeholder="Hasta (ej: 2020)" />
@@ -309,7 +319,7 @@
         <thead>
             <tr>
                 <th>ID</th><th>Empresa</th><th>Cohete</th>
-                <th>Ubicación</th><th>Año</th><th>País</th><th>Estado</th>
+                <th>Ubicación</th><th>Año</th><th>País</th><th>Estado</th><th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -317,6 +327,10 @@
                 <tr>
                     <td>{m.mission_id}</td><td>{m.company_name}</td><td>{m.rocket_name}</td>
                     <td>{m.location}</td><td>{m.year}</td><td>{m.country}</td><td>{m.mission_status}</td>
+                    <td>
+                        <button onclick={() => goto(`/space-launches/edit/${encodeURIComponent(m.country)}/${m.mission_id}`)}>Editar</button>
+                        <button onclick={() => deleteOne(m.country, m.mission_id)}>Eliminar</button>
+                    </td>
                 </tr>
             {/each}
         </tbody>
@@ -325,7 +339,6 @@
 
 <br>
 
-<!-- ── FORMULARIO DE CREACIÓN ────────────────────────────────────────────── -->
 <h3>Crear nueva misión</h3>
 <table border="1" cellpadding="8" cellspacing="0">
     <thead>
@@ -358,7 +371,6 @@
 
 <br>
 
-<!-- ── LISTADO ───────────────────────────────────────────────────────────── -->
 <h3>Listado ({total} misiones)</h3>
 
 {#if loading}
