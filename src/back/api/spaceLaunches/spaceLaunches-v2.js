@@ -106,17 +106,25 @@ router.get("/statistics", (req, res) => {
    para que Express no lo confunda con un país.
    Accesible en: /api/v2/space-launches/proxy/iss-location
 ============================================================ */
-router.get("/proxy/iss-location", async (req, res) => {
+/* ============================================================
+   PROXY SPACEX (Datos de Cohetes)
+============================================================ */
+/* ============================================================
+   PROXY RANDOM USERS (Dashboard Demográfico)
+============================================================ */
+router.get("/proxy/random-users", async (req, res) => {
     try {
-        const response = await fetch("http://api.open-notify.org/iss-now.json");
+        // Pedimos 12 perfiles aleatorios con todos sus datos
+        const response = await fetch("https://randomuser.me/api/?results=40");
+        
         if (!response.ok) {
-            return res.status(response.status).json({ error: "Error al contactar con la API de la ISS" });
+            return res.status(response.status).json({ error: "Error en la API de Usuarios" });
         }
+        
         const data = await response.json();
-        res.json(data);
+        res.json(data); // Devolvemos el JSON tal cual al frontend
     } catch (err) {
-        console.error("Error en el proxy ISS:", err);
-        res.status(500).json({ error: "Error interno del proxy ISS: " + err.message });
+        res.status(500).json({ error: "Error interno del proxy: " + err.message });
     }
 });
 

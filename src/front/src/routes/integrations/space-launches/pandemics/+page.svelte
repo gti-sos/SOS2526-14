@@ -24,7 +24,7 @@
         { key: 'polio',        label: 'Polio' },
     ];
 
-    let selectedDisease = $state('malaria');
+    let selectedDisease = $state('hiv_aids');
 
     let launchesData  = [];
     let pandemicsData = [];

@@ -135,10 +135,10 @@
                         return `
                             <b>${p.name}</b><br>
                             Región: ${p.region}<br>
-                            🚀 Lanzamientos: <b>${p.x}</b><br>
-                            🥗 Coste/día: <b>$${p.y}</b> USD PPP<br>
-                            💰 Coste anual: <b>$${p.costYear}</b> USD<br>
-                            ✅ Tasa de éxito: <b>${p.z}%</b><br>
+                             Lanzamientos: <b>${p.x}</b><br>
+                             Coste/día: <b>$${p.y}</b> USD PPP<br>
+                             Coste anual: <b>$${p.costYear}</b> USD<br>
+                             Tasa de éxito: <b>${p.z}%</b><br>
                             Categoría: <b>${p.category}</b>
                         `;
                     }
@@ -193,9 +193,9 @@
 
     {#if !loading && !errorMsg}
         <div class="stats-box">
-            <span>🚀 <strong>{totalLaunches.toLocaleString()}</strong> lanzamientos</span>
-            <span>🥗 <strong>{totalDiet.toLocaleString()}</strong> registros de dieta</span>
-            <span>🌍 <strong>{cruzados}</strong> países cruzados</span>
+            <span> <strong>{totalLaunches.toLocaleString()}</strong> lanzamientos</span>
+            <span> <strong>{totalDiet.toLocaleString()}</strong> registros de dieta</span>
+            <span> <strong>{cruzados}</strong> países cruzados</span>
         </div>
     {/if}
 

@@ -91,11 +91,14 @@
     <button onclick={() => goto('/integrations/space-launches/countries-idh-per-years')}>
         5. API countries-idh-per-years (Integración Compañero SOS) - Widget
     </button>
-    <button onclick={() => goto('/integrations/space-launches/iss-location')}>
-        6. API iss-location (Uso api externa con PROXY PROPIO) - Widget
+    <button onclick={() => goto('/integrations/space-launches/random-users')}>
+        6. API random-users (Uso api externa con PROXY PROPIO) - Widget
     </button>
-    <button onclick={() => goto('/integrations/space-launches/nasa-asteroids')}>
-        7. API nasa-asteroids (Uso api externa) - Widget
+    <button onclick={() => goto('/integrations/space-launches/RestCountries')}>
+        7. API RestCountries (Uso api externa) - Widget
+    </button>
+    <button onclick={() => goto('/integrations/space-launches/pokemon')}>
+        8. API pokemon (Uso api externa) - Widget
     </button>
 
 </div>
