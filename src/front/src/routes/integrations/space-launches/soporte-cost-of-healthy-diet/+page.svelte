@@ -47,7 +47,7 @@
         try {
             const [launches, dietData] = await Promise.all([
                 autoLoad(LAUNCHES_API, `${LAUNCHES_API}/loadInitialData`),
-                autoLoad(DIET_API,     `${DIET_API}/loadinitialsat`)
+                autoLoad(DIET_API,     `${DIET_API}/loadinitialdata`)
             ]);
 
             totalLaunches = launches.length;

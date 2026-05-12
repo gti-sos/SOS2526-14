@@ -100,21 +100,12 @@ router.get("/statistics", (req, res) => {
     });
 });
 
-/* ============================================================
-   PROXY ISS (Open Notify API)
-   IMPORTANTE: debe ir ANTES de /:country/:mission_id
-   para que Express no lo confunda con un país.
-   Accesible en: /api/v2/space-launches/proxy/iss-location
-============================================================ */
-/* ============================================================
-   PROXY SPACEX (Datos de Cohetes)
-============================================================ */
+
 /* ============================================================
    PROXY RANDOM USERS (Dashboard Demográfico)
 ============================================================ */
 router.get("/proxy/random-users", async (req, res) => {
     try {
-        // Pedimos 12 perfiles aleatorios con todos sus datos
         const response = await fetch("https://randomuser.me/api/?results=40");
         
         if (!response.ok) {
@@ -202,7 +193,7 @@ router.delete("/", (req, res) => {
 });
 
 /* ============================================================
-   GET RECURSO — va DESPUÉS del proxy
+   GET RECURSO 
 ============================================================ */
 router.get("/:country/:mission_id", (req, res) => {
 
