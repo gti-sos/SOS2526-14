@@ -7,7 +7,7 @@
     const API = '/api/v2/space-launches';
 
     let chartContainer;
-    let loading  = $state(true);
+    let loading = $state(true);
     let errorMsg = $state('');
     let totalCount = $state(0);
 
@@ -19,11 +19,12 @@
     });
 
     async function cargarYDibujar() {
-        loading  = true;
+        loading = true;
         errorMsg = '';
 
         try {
             const res = await fetch(`${API}?limit=0`);
+
             if (!res.ok) {
                 errorMsg = `Error al cargar datos: ${res.status}`;
                 return;
@@ -31,7 +32,7 @@
 
             const datos = await res.json();
 
-            // Filtramos registros con año y país válidos
+            // Filtramos registros válidos
             const datosValidos = datos.filter(m =>
                 m.year &&
                 !isNaN(Number(m.year)) &&
@@ -48,10 +49,12 @@
                 return;
             }
 
-            // ── Contar lanzamientos por país para elegir el Top N ──────
+            // ── Contar lanzamientos por país ───────────────────────
             const totalPorPais = {};
+
             datosValidos.forEach(m => {
-                totalPorPais[m.country] = (totalPorPais[m.country] || 0) + 1;
+                totalPorPais[m.country] =
+                    (totalPorPais[m.country] || 0) + 1;
             });
 
             const topPaises = Object.entries(totalPorPais)
@@ -59,100 +62,158 @@
                 .slice(0, TOP_N)
                 .map(([pais]) => pais);
 
-            // ── Recopilar todos los años únicos ordenados ─────────────
-            const todosAnios = [...new Set(
-                datosValidos
-                    .filter(m => topPaises.includes(m.country))
-                    .map(m => Number(m.year))
-            )].sort((a, b) => a - b);
+            // ── Obtener años únicos ────────────────────────────────
+            const todosAnios = [
+                ...new Set(
+                    datosValidos
+                        .filter(m => topPaises.includes(m.country))
+                        .map(m => Number(m.year))
+                )
+            ].sort((a, b) => a - b);
 
-            // ── Construir una serie por país ──────────────────────────
+            // ── Construir series ───────────────────────────────────
             const series = topPaises.map(pais => {
-                // Para cada año, contar cuántos lanzamientos hubo en ese país
+
                 const lanzamientosPorAnio = {};
+
                 datosValidos
                     .filter(m => m.country === pais)
                     .forEach(m => {
                         const anio = Number(m.year);
-                        lanzamientosPorAnio[anio] = (lanzamientosPorAnio[anio] || 0) + 1;
+
+                        lanzamientosPorAnio[anio] =
+                            (lanzamientosPorAnio[anio] || 0) + 1;
                     });
 
-                // Rellenar todos los años (0 si no hubo lanzamientos ese año)
-                const data = todosAnios.map(anio => lanzamientosPorAnio[anio] || 0);
+                const data = todosAnios.map(
+                    anio => lanzamientosPorAnio[anio] || 0
+                );
 
-                return { name: pais, data };
+                return {
+                    name: pais,
+                    data
+                };
             });
 
-            // ── Dibujar con Highcharts ────────────────────────────────
+            // ── Dibujar gráfico ────────────────────────────────────
             Highcharts.chart(chartContainer, {
                 chart: {
                     type: 'area',
-                    backgroundColor: '#0d1117'
+                    backgroundColor: '#ffffff'
                 },
+
                 title: {
                     text: '🚀 Lanzamientos Espaciales por País y Año',
-                    style: { color: '#e6edf3' }
+                    style: {
+                        color: '#000000'
+                    }
                 },
+
                 subtitle: {
-                    text: `Top ${TOP_N} países · ${totalCount.toLocaleString()} lanzamientos totales`,
-                    style: { color: '#8b949e' }
+                    text:
+                        `Top ${TOP_N} países · ` +
+                        `${totalCount.toLocaleString()} lanzamientos totales`,
+                    style: {
+                        color: '#555'
+                    }
                 },
+
                 xAxis: {
                     categories: todosAnios.map(String),
                     tickInterval: 5,
+
                     labels: {
-                        style: { color: '#8b949e' },
+                        style: {
+                            color: '#555'
+                        },
                         rotation: -45
                     },
-                    lineColor: '#30363d',
+
+                    lineColor: '#cccccc',
+
                     title: {
                         text: 'Año',
-                        style: { color: '#8b949e' }
-                    }
-                },
-                yAxis: {
-                    title: {
-                        text: 'Número de lanzamientos',
-                        style: { color: '#8b949e' }
-                    },
-                    labels: {
-                        format: '{value}%',
-                        style: { color: '#8b949e' }
-                    },
-                    gridLineColor: '#21262d'
-                },
-                tooltip: {
-                    pointFormat: '<span style="color:{series.color}">{series.name}</span>' +
-                        ': <b>{point.percentage:.1f}%</b> ({point.y} lanzamientos)<br/>',
-                    split: true,
-                    backgroundColor: '#161b22',
-                    borderColor: '#30363d',
-                    style: { color: '#e6edf3' }
-                },
-                plotOptions: {
-                    area: {
-                        stacking: 'percent',
-                        marker: { enabled: false },
-                        lineWidth: 1
-                    },
-                    series: {
-                        label: {
-                            style: { opacity: 0.5 }
+                        style: {
+                            color: '#555'
                         }
                     }
                 },
-                legend: {
-                    itemStyle: { color: '#8b949e' },
-                    itemHoverStyle: { color: '#e6edf3' }
+
+                yAxis: {
+                    title: {
+                        text: 'Número de lanzamientos',
+                        style: {
+                            color: '#555'
+                        }
+                    },
+
+                    labels: {
+                        style: {
+                            color: '#555'
+                        }
+                    },
+
+                    gridLineColor: '#e5e5e5'
                 },
-                series: series,
-                credits: { enabled: false }
+
+                tooltip: {
+                    pointFormat:
+                        '<span style="color:{series.color}">{series.name}</span>' +
+                        ': <b>{point.percentage:.1f}%</b> ' +
+                        '({point.y} lanzamientos)<br/>',
+
+                    split: true,
+
+                    backgroundColor: '#ffffff',
+                    borderColor: '#cccccc',
+
+                    style: {
+                        color: '#000000'
+                    }
+                },
+
+                plotOptions: {
+                    area: {
+                        stacking: 'percent',
+                        marker: {
+                            enabled: false
+                        },
+                        lineWidth: 1
+                    },
+
+                    series: {
+                        label: {
+                            style: {
+                                opacity: 0.6
+                            }
+                        }
+                    }
+                },
+
+                legend: {
+                    itemStyle: {
+                        color: '#333333'
+                    },
+
+                    itemHoverStyle: {
+                        color: '#000000'
+                    }
+                },
+
+                series,
+
+                credits: {
+                    enabled: false
+                }
             });
 
         } catch (err) {
+
             errorMsg = 'Error de conexión con la API.';
             console.error(err);
+
         } finally {
+
             loading = false;
         }
     }
@@ -160,58 +221,85 @@
 
 <style>
     .wrap {
-        background: #0d1117;
+        background: #ffffff;
         min-height: 100vh;
         padding: 24px;
         font-family: sans-serif;
-        color: #e6edf3;
+        color: #000000;
     }
+
     h2 {
-        color: #e6edf3;
+        color: #000000;
         margin-bottom: 16px;
     }
+
     .back-btn {
-        background: #21262d;
-        border: 1px solid #30363d;
-        color: #8b949e;
+        background: #f5f5f5;
+        border: 1px solid #cccccc;
+        color: #333333;
+
         padding: 6px 14px;
         border-radius: 8px;
         cursor: pointer;
         font-size: 13px;
         margin-bottom: 20px;
         display: inline-block;
+
+        transition: 0.2s;
     }
+
     .back-btn:hover {
-        border-color: #58a6ff;
-        color: #58a6ff;
+        border-color: #0077ff;
+        color: #0077ff;
+        background: #eef5ff;
     }
+
     .status {
         text-align: center;
         padding: 60px 0;
-        color: #8b949e;
+        color: #555;
     }
-    .status.error { color: #f85149; }
+
+    .status.error {
+        color: #d93025;
+    }
+
     .chart-box {
         width: 100%;
         height: 540px;
     }
+
     .hint {
         text-align: center;
         font-size: 12px;
-        color: #30363d;
+        color: #666;
         margin-top: 8px;
     }
 </style>
 
 <div class="wrap">
-    <button class="back-btn" onclick={() => goto('/space-launches')}>← Volver al listado</button>
+
+    <button
+        class="back-btn"
+        onclick={() => goto('/space-launches')}
+    >
+        ← Volver al listado
+    </button>
 
     <h2>📊 Visualización — Space Launches</h2>
 
     {#if loading}
-        <div class="status">⟳ Cargando datos...</div>
+
+        <div class="status">
+            ⟳ Cargando datos...
+        </div>
+
     {:else if errorMsg}
-        <div class="status error">❌ {errorMsg}</div>
+
+        <div class="status error">
+            ❌ {errorMsg}
+        </div>
+
     {/if}
 
     <div
@@ -221,9 +309,13 @@
     ></div>
 
     {#if !loading && !errorMsg}
+
         <p class="hint">
-            Cada franja representa el % de lanzamientos de ese país respecto al total mundial ese año.
+            Cada franja representa el % de lanzamientos de ese país
+            respecto al total mundial ese año.
             Pasa el cursor sobre el gráfico para ver el desglose exacto.
         </p>
+
     {/if}
+
 </div>
