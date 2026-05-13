@@ -11,7 +11,7 @@
             const resSat = await fetch('/api/v1/active-satellites');
             const satelliteData = await resSat.json();
 
-            const resFood = await fetch('https://sos2526-18-mcs-stable.onrender.com/api/v2/food-supply-utilization-accounts');
+            const resFood = await fetch('https://sos2526-18.onrender.com/api/v2/food-supply-utilization-accounts');
             const foodData = await resFood.json();
 
             console.log("Satélites cargados:", satelliteData.length);
