@@ -4,16 +4,13 @@
     import { goto } from '$app/navigation';
     
     import Highcharts from 'highcharts';
-    import HighchartsMore from 'highcharts/highcharts-more'; // Necesario para el efecto de telaraña
-
+    import HighchartsMore from 'highcharts/highcharts-more'; //Usado para formar el hexsagonno
     let loading = $state(true);
     let errorMsg = $state('');
     let chartInstance = null;
 
     async function cargarDatos() {
         try {
-            // 1. NO PROXY: Llamamos directamente a la API externa
-            // Usamos Promise.all para descargar los 3 Pokémon a la vez
             const pokemons = ['charizard', 'blastoise', 'venusaur'];
             const promesasFetch = pokemons.map(nombre => 
                 fetch(`https://pokeapi.co/api/v2/pokemon/${nombre}`).then(res => res.json())
@@ -33,7 +30,6 @@
                 };
             });
 
-            // Personalizamos los colores para que peguen con el tipo del Pokémon (Fuego, Agua, Planta)
             datosSeries[0].color = '#e74c3c'; // Charizard (Rojo)
             datosSeries[1].color = '#3498db'; // Blastoise (Azul)
             datosSeries[2].color = '#2ecc71'; // Venusaur (Verde)
@@ -51,7 +47,7 @@
 
         chartInstance = Highcharts.chart('grafica-spiderweb', {
             chart: {
-                polar: true, // Esto convierte un gráfico plano en uno circular
+                polar: true, //  convierte gráfico plano en uno circular
                 type: 'area', // Área rellena translúcida
                 backgroundColor: '#ffffff'
             },
@@ -60,7 +56,7 @@
                 style: { color: '#333333', fontSize: '22px', fontWeight: 'bold' }
             },
             subtitle: {
-                text: 'Gráfico de Telaraña (Spiderweb Chart) - Directo desde PokeAPI',
+                text: 'Gráfico en forma de hexagono (Spiderweb Chart) - Directo desde PokeAPI',
                 style: { color: '#666666' }
             },
             pane: {
@@ -75,7 +71,7 @@
                 }
             },
             yAxis: {
-                gridLineInterpolation: 'polygon', // Esto hace que las líneas de fondo formen la telaraña (hexágono) en vez de círculos
+                gridLineInterpolation: 'polygon', // Esto hace que las líneas de fondo formen hexágono en vez de círculos
                 lineWidth: 0,
                 min: 0,
                 max: 120, // Límite lógico para stats base
@@ -90,7 +86,7 @@
             },
             plotOptions: {
                 area: {
-                    fillOpacity: 0.2, // Relleno semitransparente para que se vean todos
+                    fillOpacity: 0.2, // semitransparente para que se vean todos
                     lineWidth: 2,
                     marker: {
                         radius: 4,
@@ -115,12 +111,7 @@
     <button class="back-btn" onclick={() => goto('/integrations')}>Volver a Integraciones</button>
 
     <h2>Integración Externa: Spiderweb Chart</h2>
-    <p class="sub">Conexión directa (Sin Proxy) cruzando múltiples endpoints en el frontend.</p>
-
-    <div class="proxy-note">
-        <strong>Endpoint Externo (Directo):</strong> <code>https://pokeapi.co/api/v2/pokemon/...</code><br>
-        <em>Demostración de llamadas asíncronas en paralelo (Promise.all) en el lado del cliente.</em>
-    </div>
+    <p class="sub">Api Externa de Pokemon(podemos añadir otros pokemos si queremos).</p>
 
     {#if loading}
         <div class="status-msg">Descargando estadísticas de combate...</div>
@@ -137,7 +128,6 @@
     p.sub { color: #666666; font-size: 13px; margin-bottom: 16px; }
     .back-btn { background: #f9f9f9; border: 1px solid #dddddd; color: #333333; padding: 8px 14px; border-radius: 4px; cursor: pointer; margin-bottom: 20px; font-size: 14px; }
     .back-btn:hover { background: #eeeeee; }
-    .proxy-note { background: #e8f4f8; border: 1px solid #b6e0ed; border-radius: 4px; padding: 12px; font-size: 13px; color: #005a7a; margin-bottom: 20px; }
     code { background: #ccecf6; padding: 3px 6px; border-radius: 3px; font-weight: bold; color: #004a63; }
     .tabla-box { background: #ffffff; border: 1px solid #e1e4e8; border-radius: 8px; padding: 16px; height: 650px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .status-msg { color: #555555; padding: 40px; text-align: center; background: #f9f9f9; border: 1px solid #e1e4e8; border-radius: 8px; }

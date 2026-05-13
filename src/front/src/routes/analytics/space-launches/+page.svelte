@@ -103,7 +103,7 @@
                 },
 
                 title: {
-                    text: '🚀 Lanzamientos Espaciales por País y Año',
+                    text: ' Lanzamientos Espaciales por País y Año',
                     style: {
                         color: '#000000'
                     }
@@ -286,12 +286,12 @@
         ← Volver al listado
     </button>
 
-    <h2>📊 Visualización — Space Launches</h2>
+    <h2> Visualización — Space Launches</h2>
 
     {#if loading}
 
         <div class="status">
-            ⟳ Cargando datos...
+             Cargando datos...
         </div>
 
     {:else if errorMsg}
