@@ -10,7 +10,7 @@
 
     onMount(async () => {
         try {
-            // 1. PETICIÓN A TU PROPIO PROXY (En tu archivo de satélites)
+            // 1. PETICIÓN A TU PROPIO PROXY
             const response = await fetch('/api/v1/active-satellites/proxy/countries');
 
             if (!response.ok) throw new Error(`Error en mi proxy: HTTP ${response.status}`);
@@ -18,34 +18,59 @@
 
             loading = false;
 
-            // 2. Importamos ApexCharts dinámicamente (evita errores de SSR en SvelteKit)
+            // 2. Importamos ApexCharts dinámicamente
             const ApexCharts = (await import('apexcharts')).default;
 
-            // 3. Configuración del Gráfico: POLAR AREA (Divertido y diferente)
+            // 3. Configuración del Gráfico: RADAR (Diferente y sofisticado)
             const options = {
-                series: countriesData.map(c => c.population), // Los datos
+                series: [{
+                    name: 'Población',
+                    data: countriesData.map(c => c.population),
+                }],
                 chart: {
-                    type: 'polarArea',
-                    height: 480,
-                    animations: {
+                    height: 450,
+                    type: 'radar',
+                    dropShadow: {
                         enabled: true,
-                        easing: 'easeinout',
-                        speed: 1000, // Animación chula al cargar
-                        dynamicAnimation: { speed: 350 }
+                        blur: 1,
+                        left: 1,
+                        top: 1
                     }
                 },
-                labels: countriesData.map(c => c.name), // Los nombres de los países
+                title: {
+                    text: 'Comparativa de Población Europea',
+                    align: 'center',
+                    style: { fontSize: '20px', color: '#2c3e50' }
+                },
                 stroke: {
-                    colors: ['#fff'],
-                    width: 2
+                    width: 3,
+                    colors: ['#FF4560'] // Color de la línea del radar
                 },
                 fill: {
-                    opacity: 0.85
+                    opacity: 0.4,
+                    colors: ['#FF4560'] // Color del área interna
                 },
-                legend: {
-                    position: 'bottom',
-                    fontSize: '14px',
-                    markers: { radius: 12 }
+                markers: {
+                    size: 5,
+                    colors: ['#fff'],
+                    strokeColors: '#FF4560',
+                    strokeWidth: 2,
+                },
+                labels: countriesData.map(c => c.name),
+                yaxis: {
+                    stepSize: 20000000, // Ajusta según la escala de población
+                    labels: {
+                        formatter: (val) => (val / 1000000).toFixed(0) + "M"
+                    }
+                },
+                xaxis: {
+                    labels: {
+                        style: {
+                            colors: Array(countriesData.length).fill('#333'),
+                            fontSize: '13px',
+                            fontWeight: 'bold'
+                        }
+                    }
                 },
                 tooltip: {
                     y: {
@@ -54,17 +79,18 @@
                         }
                     }
                 },
-                theme: {
-                    palette: 'palette6' // Usa colores vivos y modernos automáticamente
-                },
-                title: {
-                    text: 'Población Europea (Área Polar)',
-                    align: 'center',
-                    style: { fontSize: '20px', fontWeight: 'bold', color: '#2c3e50' }
+                plotOptions: {
+                    radar: {
+                        polygons: {
+                            strokeColors: '#e8e8e8',
+                            fill: {
+                                colors: ['#f8f8f8', '#fff']
+                            }
+                        }
+                    }
                 }
             };
 
-            // Renderizamos el gráfico
             const chart = new ApexCharts(chartContainer, options);
             chart.render();
 
@@ -83,9 +109,8 @@
     </div>
 
     <p>
-        Demostración de uso de un <strong>Proxy Propio</strong>. El frontend solicita los datos a nuestro 
-        backend (<code>/api/v1/active-satellites/proxy/countries</code>), y este se comunica con la API externa. 
-        <br><em>*Representado con <strong>ApexCharts (Polar Area)</strong> para demostrar versatilidad tecnológica.</em>
+        Demostración de uso de un <strong>Proxy Propio</strong>. 
+        <br><em>*Visualizado con <strong>ApexCharts (Radar Chart)</strong> para un análisis comparativo de red.</em>
     </p>
 
     {#if loading}
@@ -115,7 +140,7 @@
                     {#each countriesData as country, index}
                         <tr>
                             <td class="pos">{index + 1}</td>
-                            <td class="center"><img src={country.flag} alt="Bandera de {country.name}" width="40"></td>
+                            <td class="center"><img src={country.flag} alt="Bandera" width="40"></td>
                             <td><strong>{country.name}</strong></td>
                             <td class="points">{country.population.toLocaleString()}</td>
                         </tr>
@@ -127,43 +152,41 @@
 </main>
 
 <style>
-    main { max-width: 900px; margin: 0 auto; padding: 20px; font-family: sans-serif; }
+    /* El CSS se mantiene igual al anterior, es muy sólido */
+    main { max-width: 900px; margin: 0 auto; padding: 20px; font-family: 'Segoe UI', sans-serif; }
     .nav-buttons { margin-bottom: 20px; }
     
     button {
         padding: 10px 15px;
-        background-color: #3498db;
+        background-color: #e74c3c; /* Cambiado a rojo para que pegue con el radar */
         color: white;
         border: none;
         border-radius: 4px;
         cursor: pointer;
         font-weight: bold;
-        transition: background 0.2s;
     }
     
-    button:hover { background-color: #2980b9; }
+    button:hover { background-color: #c0392b; }
 
     .chart-box {
         width: 100%;
-        padding: 20px 0;
+        padding: 20px;
         margin: 20px 0;
         border: 1px solid #ddd;
-        border-radius: 8px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        background: white;
-        display: flex;
-        justify-content: center;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
-    .status { text-align: center; padding: 20px; background: #eee; border-radius: 8px; }
-    .error { color: red; background: #ffdada; border: 1px solid red; }
+    .status { text-align: center; padding: 20px; background: #f9f9f9; border-radius: 8px; }
+    .error { color: #c0392b; background: #f9ebeb; border: 1px solid #e74c3c; }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; text-align: left;}
-    th, td { padding: 12px; border: 1px solid #ccc; }
-    th { background: #2c3e50; color: white; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+    th, td { padding: 12px; border: 1px solid #eee; }
+    th { background: #2c3e50; color: white; text-align: left; }
     
-    .pos { font-weight: bold; font-size: 1.2em; color: #7f8c8d; text-align: center; }
+    .pos { font-weight: bold; color: #95a5a6; text-align: center; }
     .center { text-align: center; }
-    .points { font-weight: bold; color: #2980b9; text-align: right; }
-    img { border-radius: 4px; border: 1px solid #ccc; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .points { font-weight: bold; color: #e74c3c; text-align: right; }
+    img { border: 1px solid #eee; }
 </style>

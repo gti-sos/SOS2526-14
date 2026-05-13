@@ -4,122 +4,103 @@
 
     let chartCanvas;
     let tableData = [];
+    let loading = true; // Para saber si estamos cargando
 
     onMount(async () => {
-        // 1. Obtener tus datos de Satélites
-        const resSat = await fetch('/api/v1/active-satellites');
-        const satelliteData = await resSat.json();
+        try {
+            const resSat = await fetch('/api/v1/active-satellites');
+            const satelliteData = await resSat.json();
 
-        // 2. Obtener datos de Food Supply del compañero
-        const resFood = await fetch('https://sos2526-18-mcs-stable.onrender.com/api/v2/food-supply-utilization-accounts');
-        const foodData = await resFood.json();
+            const resFood = await fetch('https://sos2526-18-mcs-stable.onrender.com/api/v2/food-supply-utilization-accounts');
+            const foodData = await resFood.json();
 
-        // 3. Cruzar datos (MASHUP)
-        // Buscamos los países únicos en la API de alimentos
-        const countriesInFood = [...new Set(foodData.map(item => item.country_name_en))];
-        const merged = [];
+            console.log("Satélites cargados:", satelliteData.length);
+            console.log("Datos Alimentos cargados:", foodData.length);
 
-        countriesInFood.forEach(country => {
-            // Contamos cuántos satélites tiene ese país en tu API
-            const numSatellites = satelliteData.filter(sat => sat.country === country).length;
-            
-            // Solo nos interesan los países que coincidan en ambas APIs
-            if (numSatellites > 0) {
-                // Sumamos todas las toneladas importadas de ese país
-                const totalImports = foodData
-                    .filter(f => f.country_name_en === country && f.import_quantity_tonnes)
-                    .reduce((sum, f) => sum + Number(f.import_quantity_tonnes), 0);
+            // 1. Limpiamos y normalizamos nombres de países de la API de Alimentos
+            const countriesInFood = [...new Set(foodData.map(item => item.country_name_en?.trim()))];
+            const merged = [];
 
-                merged.push({
-                    country: country,
-                    satellites: numSatellites,
-                    imports: totalImports.toFixed(2) // Redondeamos a 2 decimales
-                });
-            }
-        });
+            countriesInFood.forEach(country => {
+                if (!country) return;
 
-        tableData = merged;
+                // 2. Buscamos coincidencias ignorando mayúsculas y espacios
+                const satellitesOfCountry = satelliteData.filter(sat => 
+                    sat.country?.trim().toLowerCase() === country.toLowerCase()
+                );
+                
+                const numSatellites = satellitesOfCountry.length;
+                
+                if (numSatellites > 0) {
+                    const totalImports = foodData
+                        .filter(f => f.country_name_en?.trim().toLowerCase() === country.toLowerCase())
+                        .reduce((sum, f) => sum + Number(f.import_quantity_tonnes || 0), 0);
 
-        // 4. Crear la gráfica de Barras (Combinación: Chart.js + Bar)
-        if (tableData.length > 0) {
-            new Chart(chartCanvas, {
-                type: 'bar',
-                data: {
-                    labels: tableData.map(d => d.country),
-                    datasets: [
-                        {
-                            label: 'Nº de Satélites Activos',
-                            data: tableData.map(d => d.satellites),
-                            backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                            yAxisID: 'y' // Eje izquierdo
-                        },
-                        {
-                            label: 'Importaciones de Alimentos (Toneladas)',
-                            data: tableData.map(d => d.imports),
-                            backgroundColor: 'rgba(255, 159, 64, 0.8)',
-                            yAxisID: 'y1' // Eje derecho
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: { display: true, text: 'Cantidad de Satélites' }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: { display: true, text: 'Toneladas Importadas' },
-                            grid: { drawOnChartArea: false } // Evita que la cuadrícula se solape
-                        }
-                    }
+                    merged.push({
+                        country: country,
+                        satellites: numSatellites,
+                        imports: parseFloat(totalImports.toFixed(2))
+                    });
                 }
             });
+
+            tableData = merged;
+            console.log("Países cruzados encontrados:", tableData.length);
+            loading = false;
+
+            // 3. Crear la gráfica solo si hay datos
+            if (tableData.length > 0) {
+                // Pequeño timeout para asegurar que el canvas existe en el DOM
+                setTimeout(() => {
+                    new Chart(chartCanvas, {
+                        type: 'bar',
+                        data: {
+                            labels: tableData.map(d => d.country),
+                            datasets: [
+                                {
+                                    label: 'Nº de Satélites Activos',
+                                    data: tableData.map(d => d.satellites),
+                                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                                    yAxisID: 'y'
+                                },
+                                {
+                                    label: 'Importaciones (Toneladas)',
+                                    data: tableData.map(d => d.imports),
+                                    backgroundColor: 'rgba(255, 159, 64, 0.8)',
+                                    yAxisID: 'y1'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: { type: 'linear', position: 'left', title: { display: true, text: 'Cantidad de Satélites' }},
+                                y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Toneladas' }}
+                            }
+                        }
+                    });
+                }, 100);
+            }
+        } catch (error) {
+            console.error("Error cargando el Mashup:", error);
+            loading = false;
         }
     });
 </script>
 
 <main>
     <h1>Integración: Satélites vs Suministro de Alimentos</h1>
-    <p>Comparativa entre la potencia espacial y las toneladas de alimentos importados por país (Mashup de 2 APIs).</p>
-
-    <div class="chart-container">
-        <canvas bind:this={chartCanvas}></canvas>
-    </div>
-
-    <hr>
-
-   
+    
+    {#if loading}
+        <p>Cargando y cruzando datos de APIs...</p>
+    {:else if tableData.length === 0}
+        <div style="background: #ffcccc; padding: 20px; border-radius: 8px; color: #a00;">
+            <strong>¡Atención!</strong> No se han encontrado países que coincidan en ambas APIs. 
+            <br>Comprueba que los nombres de los países (ej: "Spain") están escritos igual en tu base de datos y en la del compañero.
+        </div>
+    {:else}
+        <div class="chart-container">
+            <canvas bind:this={chartCanvas}></canvas>
+        </div>
+    {/if}
 </main>
-
-<style>
-    main {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        padding: 20px;
-        max-width: 1000px;
-        margin: 0 auto;
-        color: #333;
-    }
-
-    h1 { text-align: center; color: #2c3e50; }
-
-    .chart-container {
-        width: 100%;
-        margin: 30px 0;
-        background: #fff;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    }
-
-    
-
-    hr { margin: 40px 0; border: 0; border-top: 2px dashed #eee; }
-
-    
-</style>
