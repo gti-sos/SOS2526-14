@@ -114,11 +114,11 @@
 
                 circle.bindPopup(`
                     <div style="font-family:sans-serif; min-width:160px;">
-                        <b style="font-size:15px;">🌍 ${pais}</b><br>
+                        <b style="font-size:15px;"> ${pais}</b><br>
                         <hr style="margin:6px 0;">
-                        🚀 <b>${count.toLocaleString()}</b> lanzamientos<br>
-                        ✅ <b>${exitos.toLocaleString()}</b> exitosos<br>
-                        📊 Tasa de éxito: <b>${tasaExito}%</b>
+                         <b>${count.toLocaleString()}</b> lanzamientos<br>
+                         <b>${exitos.toLocaleString()}</b> exitosos<br>
+                         Tasa de éxito: <b>${tasaExito}%</b>
                     </div>
                 `);
 
@@ -226,7 +226,7 @@
         ← Volver a la gráfica
     </button>
 
-    <h2>🗺️ Mapa de Lanzamientos Espaciales</h2>
+    <h2> Mapa de Lanzamientos Espaciales</h2>
 
     <p class="subtitle">
         {#if !loading && !errorMsg}

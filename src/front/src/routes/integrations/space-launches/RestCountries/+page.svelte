@@ -99,14 +99,14 @@
                                     const idx = context.dataIndex; // Miramos qué país está tocando el ratón
                                     const poblacionReal = poblaciones[idx]; // Buscamos su población real
                                     const millones = (poblacionReal / 1000000).toFixed(1);
-                                    return ` 👥 Población: ${millones} millones`;
+                                    return `  Población: ${millones} millones`;
                                 },
                                 afterLabel: function(context) {
                                     const idx = context.dataIndex;
                                     return [
-                                        ` 🏛️ Capital: ${capitales[idx]}`,
-                                        ` 🌍 Continente: ${continentes[idx]}`,
-                                        ` 📏 Superficie: ${areas[idx].toLocaleString()} km²`
+                                        `  Capital: ${capitales[idx]}`,
+                                        `  Continente: ${continentes[idx]}`,
+                                        `  Superficie: ${areas[idx].toLocaleString()} km²`
                                     ];
                                 }
                             }
@@ -138,9 +138,9 @@
 
     {#if !loading && !errorMsg}
         <div class="stats-box">
-            <span>🌍 <strong>{totalPaises}</strong> países analizados</span>
-            <span>📡 Peticiones a la API: <strong>1 (Óptimo)</strong></span>
-            <span>📊 Datos mostrados: Población, Área, Capital y Continente</span>
+            <span> <strong>{totalPaises}</strong> países analizados</span>
+            <span> Peticiones a la API: <strong>1 (Óptimo)</strong></span>
+            <span> Datos mostrados: Población, Área, Capital y Continente</span>
         </div>
     {/if}
 
