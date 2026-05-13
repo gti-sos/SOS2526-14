@@ -45,6 +45,7 @@
                     <p><strong>Fuente de datos:</strong> active-satellites</p>
                     <div class="botones-recursos">
                         <a href="/active-satellites" class="btn-front">💻 Ver Frontend</a>
+                        <a href="https://www.youtube.com/embed/wzGDapTuZEg" target="_blank" class="btn-api">Vídeo Explicativo</a>
                         <a href="/api/v1/active-satellites" target="_blank" class="btn-api">⚙️ API v1</a>
                         <a href="/api/v1/active-satellites/docs" target="_blank" class="btn-docs">📚 Ver Documentación de la API</a>
                     </div>
