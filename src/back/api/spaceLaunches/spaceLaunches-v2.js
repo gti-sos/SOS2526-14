@@ -120,7 +120,7 @@ router.get("/proxy/random-users", async (req, res) => {
 });
 
 /* ============================================================
-   GET COLECCIÓN (búsqueda + paginación)
+   GET COLECCIÓN (busqueda + paginación)
 ============================================================ */
 router.get("/", (req, res) => {
 
