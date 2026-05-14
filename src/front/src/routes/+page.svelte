@@ -32,12 +32,11 @@
                     <p><strong>Fuente de datos:</strong> space-launches</p>
                     <div class="botones-recursos">
                         <a href="/space-launches" class="btn-front">💻 Ver Frontend</a>
-                        <a href="https://drive.google.com/file/d/1QWatdTY--VQMkExjwVJBtpEHIPx-YcEx/preview" target="_blank" class="btn-api">Vídeo Explicativo</a>
+                        <a href="https://drive.google.com/file/d/19_hNuissZquoQQMMie5wfW1GI2DHECxB/preview" target="_blank" class="btn-api">Vídeo Explicativo</a>
                         <a href="/api/v1/space-launches" target="_blank" class="btn-api">⚙️ API v1</a>
                         <a href="/api/v2/space-launches" target="_blank" class="btn-api">⚙️ API v2</a>
                         <a href="/api/v1/space-launches/docs" target="_blank" class="btn-docs">📚 Ver Documentación de la API</a>
                         <a href="/api/v2/space-launches/docs" target="_blank" class="btn-docs">📚 Ver Documentación de la API v2</a>
-
                     </div>
                 </div>
 

@@ -2,17 +2,23 @@
     // @ts-nocheck
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
-    import Highcharts from 'highcharts';
+    import Chart from 'chart.js/auto'; // <-- Importamos Chart.js en lugar de Highcharts
 
     const API = '/api/v2/space-launches';
 
-    let chartContainer;
+    let chartContainer; // Ahora esto apuntará a una etiqueta <canvas>
+    let chartInstance = null;
     let loading = $state(true);
     let errorMsg = $state('');
     let totalCount = $state(0);
 
-    // Cuántos países mostrar (los más activos)
     const TOP_N = 10;
+
+    // Chart.js necesita que le demos los colores manualmente
+    const colores = [
+        '#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', 
+        '#34495e', '#16a085', '#e67e22', '#c0392b', '#7f8c8d'
+    ];
 
     onMount(async () => {
         await cargarYDibujar();
@@ -32,7 +38,7 @@
 
             const datos = await res.json();
 
-            // Filtramos registros válidos
+            // 1. Filtramos registros válidos
             const datosValidos = datos.filter(m =>
                 m.year &&
                 !isNaN(Number(m.year)) &&
@@ -49,12 +55,10 @@
                 return;
             }
 
-            // ── Contar lanzamientos por país ───────────────────────
+            // 2. Contar lanzamientos por país
             const totalPorPais = {};
-
             datosValidos.forEach(m => {
-                totalPorPais[m.country] =
-                    (totalPorPais[m.country] || 0) + 1;
+                totalPorPais[m.country] = (totalPorPais[m.country] || 0) + 1;
             });
 
             const topPaises = Object.entries(totalPorPais)
@@ -62,7 +66,7 @@
                 .slice(0, TOP_N)
                 .map(([pais]) => pais);
 
-            // ── Obtener años únicos ────────────────────────────────
+            // 3. Obtener años únicos
             const todosAnios = [
                 ...new Set(
                     datosValidos
@@ -71,149 +75,100 @@
                 )
             ].sort((a, b) => a - b);
 
-            // ── Construir series ───────────────────────────────────
-            const series = topPaises.map(pais => {
+            // 4. Calcular el total de lanzamientos en cada año (Necesario para Chart.js)
+            const totalesPorAnio = {};
+            todosAnios.forEach(anio => {
+                totalesPorAnio[anio] = datosValidos.filter(
+                    m => topPaises.includes(m.country) && Number(m.year) === anio
+                ).length;
+            });
 
-                const lanzamientosPorAnio = {};
-
-                datosValidos
-                    .filter(m => m.country === pais)
-                    .forEach(m => {
-                        const anio = Number(m.year);
-
-                        lanzamientosPorAnio[anio] =
-                            (lanzamientosPorAnio[anio] || 0) + 1;
-                    });
-
-                const data = todosAnios.map(
-                    anio => lanzamientosPorAnio[anio] || 0
-                );
+            // 5. Construir los datasets (las franjas de área)
+            const datasets = topPaises.map((pais, index) => {
+                const data = todosAnios.map(anio => {
+                    // Cuántos lanzó este país este año
+                    const count = datosValidos.filter(m => m.country === pais && Number(m.year) === anio).length;
+                    // Qué porcentaje representa sobre el total de ese año
+                    const porcentaje = totalesPorAnio[anio] ? (count / totalesPorAnio[anio]) * 100 : 0;
+                    
+                    return {
+                        x: String(anio),
+                        y: porcentaje, 
+                        rawCount: count // Guardamos el número real para mostrarlo en el recuadro flotante
+                    };
+                });
 
                 return {
-                    name: pais,
-                    data
+                    label: pais,
+                    data: data,
+                    fill: true, // Magia: convierte la línea en un área coloreada
+                    backgroundColor: colores[index % colores.length] + '80', // Color con un poco de transparencia
+                    borderColor: colores[index % colores.length],
+                    borderWidth: 1,
+                    tension: 0.4, // Hace que las líneas sean curvadas y suaves
+                    pointRadius: 0 // Ocultamos los circulitos de los puntos para que quede limpio
                 };
             });
 
-            // ── Dibujar gráfico ────────────────────────────────────
-            Highcharts.chart(chartContainer, {
-                chart: {
-                    type: 'area',
-                    backgroundColor: '#ffffff'
-                },
+            // 6. Dibujar el gráfico
+            // Si ya existía un gráfico, lo destruimos para que no se superpongan
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
 
-                title: {
-                    text: ' Lanzamientos Espaciales por País y Año',
-                    style: {
-                        color: '#000000'
-                    }
-                },
-
-                subtitle: {
-                    text:
-                        `Top ${TOP_N} países · ` +
-                        `${totalCount.toLocaleString()} lanzamientos totales`,
-                    style: {
-                        color: '#555'
-                    }
-                },
-
-                xAxis: {
-                    categories: todosAnios.map(String),
-                    tickInterval: 5,
-
-                    labels: {
-                        style: {
-                            color: '#555'
+            chartInstance = new Chart(chartContainer, {
+                type: 'line', // En Chart.js, las áreas son gráficos de línea con relleno
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false, // Muestra todos los datos de un año al pasar el ratón
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Año', color: '#555' },
+                            grid: { display: false }
                         },
-                        rotation: -45
-                    },
-
-                    lineColor: '#cccccc',
-
-                    title: {
-                        text: 'Año',
-                        style: {
-                            color: '#555'
-                        }
-                    }
-                },
-
-                yAxis: {
-                    title: {
-                        text: 'Número de lanzamientos',
-                        style: {
-                            color: '#555'
+                        y: {
+                            stacked: true, // Esto apila las franjas una encima de otra
+                            max: 100, // Fijamos el techo en el 100%
+                            title: { display: true, text: '% de lanzamientos', color: '#555' },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
                         }
                     },
-
-                    labels: {
-                        style: {
-                            color: '#555'
-                        }
-                    },
-
-                    gridLineColor: '#e5e5e5'
-                },
-
-                tooltip: {
-                    pointFormat:
-                        '<span style="color:{series.color}">{series.name}</span>' +
-                        ': <b>{point.percentage:.1f}%</b> ' +
-                        '({point.y} lanzamientos)<br/>',
-
-                    split: true,
-
-                    backgroundColor: '#ffffff',
-                    borderColor: '#cccccc',
-
-                    style: {
-                        color: '#000000'
-                    }
-                },
-
-                plotOptions: {
-                    area: {
-                        stacking: 'percent',
-                        marker: {
-                            enabled: false
+                    plugins: {
+                        legend: {
+                            labels: { color: '#333' }
                         },
-                        lineWidth: 1
-                    },
-
-                    series: {
-                        label: {
-                            style: {
-                                opacity: 0.6
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#000',
+                            bodyColor: '#333',
+                            borderColor: '#ccc',
+                            borderWidth: 1,
+                            callbacks: {
+                                // Personalizamos el texto al pasar el ratón
+                                label: function(context) {
+                                    const porcentaje = context.raw.y.toFixed(1);
+                                    const lanzamientos = context.raw.rawCount;
+                                    return `${context.dataset.label}: ${porcentaje}% (${lanzamientos} lanzamientos)`;
+                                }
                             }
                         }
                     }
-                },
-
-                legend: {
-                    itemStyle: {
-                        color: '#333333'
-                    },
-
-                    itemHoverStyle: {
-                        color: '#000000'
-                    }
-                },
-
-                series,
-
-                credits: {
-                    enabled: false
                 }
             });
 
         } catch (err) {
-
             errorMsg = 'Error de conexión con la API.';
             console.error(err);
-
         } finally {
-
             loading = false;
         }
     }
@@ -230,21 +185,26 @@
 
     h2 {
         color: #000000;
-        margin-bottom: 16px;
+        margin-bottom: 4px;
+    }
+    
+    .subtitulo {
+        color: #555;
+        font-size: 14px;
+        margin-top: 0;
+        margin-bottom: 24px;
     }
 
     .back-btn {
         background: #f5f5f5;
         border: 1px solid #cccccc;
         color: #333333;
-
         padding: 6px 14px;
         border-radius: 8px;
         cursor: pointer;
         font-size: 13px;
         margin-bottom: 20px;
         display: inline-block;
-
         transition: 0.2s;
     }
 
@@ -267,13 +227,14 @@
     .chart-box {
         width: 100%;
         height: 540px;
+        position: relative; /* Importante para que Chart.js sea responsivo */
     }
 
     .hint {
         text-align: center;
         font-size: 12px;
         color: #666;
-        margin-top: 8px;
+        margin-top: 16px;
     }
 </style>
 
@@ -286,36 +247,29 @@
         ← Volver al listado
     </button>
 
-    <h2> Visualización — Space Launches</h2>
+    <h2>Visualización — Space Launches (Chart.js)</h2>
+    <p class="subtitulo">Top {TOP_N} países · {totalCount.toLocaleString()} lanzamientos totales</p>
 
     {#if loading}
-
         <div class="status">
-             Cargando datos...
+             Cargando datos y generando áreas apiladas...
         </div>
-
     {:else if errorMsg}
-
         <div class="status error">
             ❌ {errorMsg}
         </div>
-
     {/if}
 
-    <div
-        bind:this={chartContainer}
-        class="chart-box"
-        style={loading || errorMsg ? 'display:none' : ''}
-    ></div>
+    <!-- Chart.js OBLIGA a que su contenedor sea una etiqueta <canvas>, no un <div> -->
+    <div class="chart-box" style={loading || errorMsg ? 'display:none' : ''}>
+        <canvas bind:this={chartContainer}></canvas>
+    </div>
 
     {#if !loading && !errorMsg}
-
         <p class="hint">
-            Cada franja representa el % de lanzamientos de ese país
-            respecto al total mundial ese año.
+            Cada franja representa el % de lanzamientos de ese país respecto al total mundial ese año.
             Pasa el cursor sobre el gráfico para ver el desglose exacto.
         </p>
-
     {/if}
 
 </div>

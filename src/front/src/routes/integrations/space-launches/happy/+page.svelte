@@ -3,6 +3,11 @@
     import { onMount, tick } from 'svelte';
     import { goto } from '$app/navigation';
     import Highcharts from 'highcharts';
+    
+    // Importamos los módulos necesarios para crear las "Piruletas"
+    import HighchartsMore from 'highcharts/highcharts-more';
+    import HighchartsDumbbell from 'highcharts/modules/dumbbell';
+    import HighchartsLollipop from 'highcharts/modules/lollipop';
 
     let loading = $state(true);
     let errorMsg = $state('');
@@ -16,6 +21,11 @@
     const API_COMPA = 'https://sos2526-15.onrender.com/api/v2/happiness-indices';
 
     onMount(async () => {
+        // Inicializamos los módulos de las piruletas antes de cargar datos
+        if (typeof HighchartsMore === 'function') HighchartsMore(Highcharts);
+        if (typeof HighchartsDumbbell === 'function') HighchartsDumbbell(Highcharts);
+        if (typeof HighchartsLollipop === 'function') HighchartsLollipop(Highcharts);
+
         try {
             // 1. Cargamos todos los datos
             let res = await fetch(API_COMPA);
@@ -69,28 +79,36 @@
 
         chartInstance = Highcharts.chart('grafica-felicidad', {
             chart: { 
-                type: 'bar', 
+                type: 'lollipop', 
                 backgroundColor: '#ffffff'
             },
-            title: { text: `Desglose de la Felicidad por País (${añoSeleccionado})` },
+            title: { 
+                text: `Desglose de la Felicidad por País (${añoSeleccionado})`,
+                style: { fontWeight: 'bold' }
+            },
             subtitle: { text: 'Muestra cuántos puntos aporta el PIB y el Apoyo Social a la nota final de felicidad' },
             xAxis: { 
                 categories: paises,
-                title: { text: null }
+                title: { text: null },
+                labels: { style: { fontWeight: 'bold' } }
             },
             yAxis: { 
                 min: 0,
                 title: { text: 'Puntos aportados a la nota (sobre 10)', align: 'high' },
-                labels: { overflow: 'justify' }
+                labels: { overflow: 'justify' },
+                gridLineColor: '#eeeeee'
             },
             tooltip: { 
                 shared: true,
-                valueSuffix: ' puntos'
+                valueSuffix: ' puntos',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
             },
             plotOptions: {
-                bar: {
-                    stacking: 'normal',
-                    dataLabels: { enabled: false }
+                lollipop: {
+                    connectorWidth: 2, // Grosor del "palo" de la piruleta
+                    marker: {
+                        radius: 6 // Tamaño del "caramelo" (el círculo)
+                    }
                 }
             },
             series: [
@@ -118,8 +136,8 @@
 
     <p>
         Representación gráfica de los datos de la API de <strong>Índices de Felicidad</strong>.
-        Utilizamos un <strong>Gráfico de Barras Horizontales Apiladas</strong> para ver el peso específico que tienen 
-        factores como la economía y la sociedad sobre la nota total de cada país.
+        Utilizamos un <strong>Gráfico de Piruletas (Lollipop Chart)</strong> para ver el peso específico que tienen 
+        factores como la economía y la sociedad sobre la nota total de cada país de forma limpia y minimalista.
     </p>
 
     {#if loading}
@@ -146,14 +164,14 @@
     main { max-width: 900px; margin: 20px auto; font-family: sans-serif; color: #333; }
     
     .botones { margin-bottom: 20px; }
-    button { padding: 8px 15px; margin-right: 10px; cursor: pointer; background: #fff; border: 1px solid #ccc; border-radius: 4px; }
-    button:hover { background: #eee; }
+    button { padding: 8px 15px; margin-right: 10px; cursor: pointer; background: #fff; border: 1px solid #ccc; border-radius: 4px; transition: 0.2s; }
+    button:hover { background: #eee; border-color: #999; }
     
-    .controles { margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
-    select { padding: 5px 10px; font-size: 16px; margin-left: 10px; border-radius: 4px; }
+    .controles { margin-bottom: 20px; background: #f4f6f8; padding: 15px; border-radius: 8px; border: 1px solid #e1e4e8; }
+    select { padding: 6px 12px; font-size: 15px; margin-left: 10px; border-radius: 4px; border: 1px solid #ccc; outline: none; }
 
-    .status { text-align: center; padding: 20px; background: #f9f9f9; border-radius: 8px; font-weight: bold; }
-    .error { color: #c0392b; background: #f9ebeb; border: 1px solid #c0392b; }
+    .status { text-align: center; padding: 30px; background: #f9f9f9; border-radius: 8px; font-weight: bold; color: #555; }
+    .error { color: #d73a49; background: #ffeef0; border: 1px solid #d73a49; }
     
-    #grafica-felicidad { width: 100%; height: 500px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    #grafica-felicidad { width: 100%; height: 500px; border: 1px solid #e1e4e8; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 10px; }
 </style>
